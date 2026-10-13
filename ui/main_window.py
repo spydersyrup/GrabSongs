@@ -15,7 +15,7 @@ from core.audio_player import PreviewPlayer
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Harmonix — Unified Multi-Platform Music Downloader")
+        self.setWindowTitle("Harmonix - Unified Multi-Platform Music Downloader")
         self.resize(1180, 780)
         self.setMinimumSize(940, 620)
 

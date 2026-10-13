@@ -20,8 +20,12 @@ def main():
 
     window = MainWindow()
     window.show()
+    window.raise_()
+    window.activateWindow()
 
+    print("Harmonix GUI initialized and running.")
     sys.exit(app.exec())
+
 
 if __name__ == "__main__":
     main()
