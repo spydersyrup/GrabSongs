@@ -1,0 +1,103 @@
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+
+Rectangle {
+    id: root
+    property string text: ""
+    property string iconName: ""
+    property bool iconRight: false
+    property bool preserveIconColor: false
+    property bool primary: false
+    property bool destructive: false
+    property string accessibleName: text
+    signal clicked()
+
+    readonly property color accentColor: recordRed
+    readonly property color accentHoverColor: recordRedHover
+
+    implicitWidth: contentRow.implicitWidth + 22
+    implicitHeight: 32
+    radius: 8
+    // A main action looks like a selected chip, with an accent border and text.
+    readonly property color contentColor: root.destructive ? (mouseArea.containsMouse ? danger : Qt.alpha(danger, 0.9))
+        : root.primary ? root.accentColor
+        : (mouseArea.containsMouse ? textPrimary : textSecondary)
+    color: {
+        if (mouseArea.containsMouse) {
+            if (root.destructive) return Qt.alpha(danger, 0.18)
+            return surfaceElevated
+        }
+        if (root.destructive) return "transparent"
+        if (root.primary) return surfaceSelected
+        return surfaceInput
+    }
+    border.width: root.primary || root.destructive || mouseArea.containsMouse ? 1 : 0
+    border.color: {
+        if (root.destructive) return Qt.alpha(danger, mouseArea.containsMouse ? 0.5 : 0.25)
+        if (root.primary) return mouseArea.containsMouse ? root.accentHoverColor : root.accentColor
+        return mouseArea.containsMouse ? borderVariant : borderSubtle
+    }
+    Accessible.name: root.accessibleName
+    Accessible.role: Accessible.Button
+
+    scale: mouseArea.pressed ? 0.97 : 1.0
+
+    Behavior on color { ColorAnimation { duration: 120 } }
+    Behavior on border.color { ColorAnimation { duration: 120 } }
+    Behavior on scale { NumberAnimation { duration: 80 } }
+
+    RowLayout {
+        id: contentRow
+        anchors.centerIn: parent
+        spacing: 6
+
+        LucideIcon {
+            visible: root.iconName.length > 0 && !root.iconRight
+            Layout.preferredWidth: 14
+            Layout.preferredHeight: 14
+            Layout.alignment: Qt.AlignVCenter
+            icon: root.iconName
+            preserveColor: root.preserveIconColor
+            color: root.contentColor
+
+            Behavior on color { ColorAnimation { duration: 120 } }
+        }
+
+        Label {
+            text: root.text
+            color: root.contentColor
+            font.family: (typeof displayFont !== "undefined" ? displayFont : "Space Grotesk")
+            font.pixelSize: 12
+            font.weight: Font.DemiBold
+            Layout.alignment: Qt.AlignVCenter
+
+            Behavior on color { ColorAnimation { duration: 120 } }
+        }
+
+        LucideIcon {
+            visible: root.iconName.length > 0 && root.iconRight
+            Layout.preferredWidth: 14
+            Layout.preferredHeight: 14
+            Layout.alignment: Qt.AlignVCenter
+            icon: root.iconName
+            preserveColor: root.preserveIconColor
+            color: root.contentColor
+
+            Behavior on color { ColorAnimation { duration: 120 } }
+        }
+    }
+
+    MouseArea {
+        id: mouseArea
+        anchors.fill: parent
+        enabled: root.enabled
+        hoverEnabled: true
+        cursorShape: root.enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+        onClicked: root.clicked()
+    }
+
+    Keys.onReturnPressed: root.clicked()
+    Keys.onEnterPressed: root.clicked()
+    activeFocusOnTab: true
+}

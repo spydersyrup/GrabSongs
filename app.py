@@ -1,28 +1,18 @@
 import sys
 import os
 
+# Ensure Basic style for QtQuick Controls (exact style used by CassetteCat Desktop)
+os.environ["QT_QUICK_CONTROLS_STYLE"] = "Basic"
+
 # Add root folder to sys.path so core and ui imports work cleanly
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-# Ensure attachment to interactive desktop on Windows
-if sys.platform == "win32":
-    try:
-        import ctypes
-        user32 = ctypes.windll.user32
-        h_winsta = user32.OpenWindowStationW("WinSta0", False, 0x10000000)
-        if h_winsta:
-            user32.SetProcessWindowStation(h_winsta)
-        h_desk = user32.OpenDesktopW("Default", 0, False, 0x10000000)
-        if h_desk:
-            user32.SetThreadDesktop(h_desk)
-    except Exception:
-        pass
-
 from PyQt6.QtWidgets import QApplication
-from PyQt6.QtGui import QFontDatabase, QFont, QIcon
-from PyQt6.QtCore import Qt
-from ui.main_window import MainWindow
-from ui.styles import THEME_CASSETTECAT
+from PyQt6.QtGui import QFontDatabase, QIcon
+from PyQt6.QtQml import QQmlApplicationEngine
+from PyQt6.QtCore import QUrl
+
+from bridge import PlayerBridge, DownloaderBridge
 
 def load_fonts():
     fonts_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "fonts")
@@ -34,7 +24,7 @@ def load_fonts():
 
 def main():
     app = QApplication(sys.argv)
-    app.setApplicationName("CassetteCat Downloader")
+    app.setApplicationName("Harmonix • CassetteCat Downloader")
     app.setOrganizationName("CassetteCat")
 
     # Set Window Icon
@@ -45,19 +35,29 @@ def main():
     # Load CassetteCat typography (Space Grotesk, IBM Plex Sans, IBM Plex Mono)
     load_fonts()
 
-    # Set IBM Plex Sans as the default body font
-    default_font = QFont("IBM Plex Sans", 10)
-    app.setFont(default_font)
+    # Create backend bridges
+    player_bridge = PlayerBridge()
+    downloader_bridge = DownloaderBridge(player_bridge)
 
-    # Apply CassetteCat Visual System Stylesheet
-    app.setStyleSheet(THEME_CASSETTECAT)
+    # Initialize QML Application Engine
+    engine = QQmlApplicationEngine()
+    qml_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "qml")
+    engine.addImportPath(qml_dir)
 
-    window = MainWindow()
-    window.show()
-    window.raise_()
-    window.activateWindow()
+    # Register bridge context properties
+    engine.rootContext().setContextProperty("player", player_bridge)
+    engine.rootContext().setContextProperty("bridge", downloader_bridge)
 
-    print("CassetteCat Downloader initialized and running.", flush=True)
+    engine.warnings.connect(lambda warns: [print("QML Warning:", w.toString()) for w in warns])
+
+    main_qml = os.path.join(qml_dir, "Main.qml")
+    engine.load(QUrl.fromLocalFile(main_qml))
+
+    if not engine.rootObjects():
+        print("FATAL: QML root objects is empty! Check warnings above.", file=sys.stderr)
+        sys.exit(1)
+
+    print("Harmonix CassetteCat QML Downloader initialized and running.", flush=True)
     sys.exit(app.exec())
 
 if __name__ == "__main__":

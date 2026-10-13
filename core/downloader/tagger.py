@@ -146,3 +146,24 @@ class AudioTagger:
             audio.clear_pictures()
             audio.add_picture(pic)
         audio.save()
+
+    @classmethod
+    def read_tags(cls, file_path: str) -> Dict[str, Any]:
+        if not os.path.exists(file_path):
+            return {}
+        try:
+            f = mutagen.File(file_path, easy=True)
+            if f is None:
+                return {}
+            title = f.get("title", [""])[0] if f.get("title") else ""
+            artist = f.get("artist", [""])[0] if f.get("artist") else ""
+            album = f.get("album", [""])[0] if f.get("album") else ""
+            duration = int(f.info.length) if hasattr(f, "info") and f.info else 0
+            return {
+                "title": title,
+                "artist": artist,
+                "album": album,
+                "duration": duration
+            }
+        except Exception:
+            return {}

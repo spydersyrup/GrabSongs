@@ -1,0 +1,140 @@
+import QtQuick
+import QtQuick.Controls
+
+Item {
+    id: root
+    required property var appWindow
+    required property real sidebarWidth
+    required property bool sidebarCollapsed
+    property string destination: "home"
+    property string iconName: ""
+    property string label: ""
+    property bool preserveIconColor: false
+    property bool accessHintsVisible: false
+    property string accessKey: ""
+
+    implicitWidth: sidebarWidth
+    implicitHeight: 40
+    width: sidebarWidth
+    height: 40
+    readonly property bool selected: appWindow.page === destination && !appWindow.nowPlayingOpen
+    readonly property bool highlighted: navMouse.containsMouse || (activeFocus && !mouseFocused)
+    property bool mouseFocused: false
+    onActiveFocusChanged: if (!activeFocus) mouseFocused = false
+
+    function activate() {
+        appWindow.nowPlayingOpen = false
+        appWindow.page = destination
+    }
+
+    Accessible.role: Accessible.Button
+    Accessible.name: label
+    Accessible.onPressAction: activate()
+    activeFocusOnTab: true
+    Keys.onReturnPressed: activate()
+    Keys.onEnterPressed: activate()
+
+    Rectangle {
+        id: navCard
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.verticalCenter: parent.verticalCenter
+        width: root.sidebarCollapsed ? 44 : 180
+        height: 40
+        radius: 8
+        color: root.selected
+            ? root.appWindow.surfaceElevated
+            : (root.highlighted ? root.appWindow.surfaceCardHover : "transparent")
+        border.width: 0
+        border.color: "transparent"
+
+        Behavior on width { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
+        Behavior on color { ColorAnimation { duration: 120 } }
+
+        Rectangle {
+            visible: root.selected
+            anchors.left: parent.left
+            anchors.leftMargin: 2
+            anchors.verticalCenter: parent.verticalCenter
+            width: 3
+            height: 16
+            radius: 1.5
+            color: root.appWindow.recordRed
+        }
+
+        LucideIcon {
+            id: navIcon
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.left: parent.left
+            anchors.leftMargin: root.sidebarCollapsed ? 12 : 14
+            width: 20
+            height: 20
+            icon: root.iconName
+            preserveColor: root.selected && root.preserveIconColor
+            color: root.selected
+                ? root.appWindow.recordRedHover
+                : (root.highlighted ? root.appWindow.textSecondary : root.appWindow.silverDim)
+
+            Behavior on anchors.leftMargin { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
+            Behavior on color { ColorAnimation { duration: 120 } }
+        }
+
+        Label {
+            anchors.left: navIcon.right
+            anchors.leftMargin: 12
+            anchors.right: parent.right
+            anchors.rightMargin: 8
+            anchors.verticalCenter: parent.verticalCenter
+            text: root.label
+            color: root.selected
+                ? root.appWindow.textPrimary
+                : (root.highlighted ? root.appWindow.textPrimary : root.appWindow.textSecondary)
+            font.family: root.appWindow.displayFont
+            font.pixelSize: 13
+            font.weight: root.selected ? Font.DemiBold : Font.Normal
+            elide: Text.ElideRight
+            visible: !root.sidebarCollapsed && opacity > 0.01
+            opacity: Math.max(0.0, Math.min(1.0, (root.sidebarWidth - 90) / 110))
+        }
+
+        Rectangle {
+            visible: root.accessHintsVisible && root.accessKey.length > 0
+            anchors.right: parent.right
+            anchors.rightMargin: 7
+            anchors.verticalCenter: parent.verticalCenter
+            width: 20
+            height: 20
+            radius: 4
+            color: root.appWindow.surfaceBase
+            border.width: 1
+            border.color: root.appWindow.recordRed
+
+            Label {
+                anchors.centerIn: parent
+                text: root.accessKey
+                color: root.appWindow.recordRedHover
+                font.family: root.appWindow.monoFont
+                font.pixelSize: 10
+                font.weight: Font.Bold
+            }
+        }
+    }
+
+    MouseArea {
+        id: navMouse
+        anchors.fill: parent
+        hoverEnabled: true
+        cursorShape: Qt.PointingHandCursor
+        onPressed: {
+            root.mouseFocused = true
+            root.forceActiveFocus()
+        }
+        onClicked: root.activate()
+    }
+
+    AppToolTip {
+        targetItem: navMouse
+        text: root.label
+        visibleTarget: navMouse.containsMouse && root.sidebarCollapsed
+        delay: 250
+    }
+}

@@ -1,0 +1,68 @@
+import QtQuick
+
+Rectangle {
+    id: root
+    property bool checked: false
+    signal toggled(bool checked)
+
+    implicitWidth: 46
+    implicitHeight: 26
+    radius: 13
+    color: root.checked
+        ? (mouseArea.containsMouse ? recordRedHover : recordRed)
+        : (mouseArea.containsMouse ? surfaceCardHover : surfaceCard)
+    opacity: root.enabled ? 1.0 : 0.4
+    border.width: root.activeFocus ? 2 : 0
+    border.color: root.activeFocus
+        ? recordRedHover
+        : "transparent"
+
+    activeFocusOnTab: true
+    Accessible.role: Accessible.CheckBox
+    Accessible.name: "Switch"
+    Accessible.checked: root.checked
+
+    Keys.onSpacePressed: event => {
+        event.accepted = true
+        root.toggled(!root.checked)
+    }
+    Keys.onReturnPressed: event => {
+        event.accepted = true
+        root.toggled(!root.checked)
+    }
+
+    Behavior on color { ColorAnimation { duration: 140 } }
+    Behavior on border.color { ColorAnimation { duration: 140 } }
+
+    Rectangle {
+        id: thumb
+        y: 4
+        x: root.checked ? root.width - width - 4 : 4
+        width: 18
+        height: 18
+        radius: 9
+        color: root.checked
+            ? "#FFFFFF"
+            : (mouseArea.containsMouse ? textSecondary : silverDim)
+
+        Behavior on x {
+            NumberAnimation {
+                duration: 140
+                easing.type: Easing.OutCubic
+            }
+        }
+        Behavior on color { ColorAnimation { duration: 140 } }
+    }
+
+    MouseArea {
+        id: mouseArea
+        anchors.fill: parent
+        enabled: root.enabled
+        hoverEnabled: root.enabled
+        cursorShape: root.enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+        onClicked: {
+            root.forceActiveFocus()
+            root.toggled(!root.checked)
+        }
+    }
+}
