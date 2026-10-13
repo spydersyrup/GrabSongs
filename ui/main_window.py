@@ -1,14 +1,16 @@
 import os
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QHBoxLayout, QVBoxLayout,
-    QStackedWidget, QPushButton, QLabel, QFrame
+    QStackedWidget, QFrame
 )
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QIcon, QPixmap
+from PyQt6.QtCore import Qt, QPoint
+from PyQt6.QtGui import QIcon
 from .pages.search_page import SearchPage
 from .pages.queue_page import QueuePage
 from .pages.library_page import LibraryPage
 from .pages.settings_page import SettingsPage
+from .widgets.nav_rail import NavRail
+from .widgets.top_bar import TopBar
 from .widgets.player_bar import PlayerBar
 from core.downloader.queue_manager import QueueManager
 from core.audio_player import PreviewPlayer
@@ -17,8 +19,12 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("CassetteCat Downloader")
-        self.resize(1180, 780)
-        self.setMinimumSize(940, 620)
+        self.resize(1200, 800)
+        self.setMinimumSize(960, 640)
+
+        # Frameless window matching CassetteCat Main.qml
+        self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Window)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, False)
 
         # App Icon
         icon_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets", "cassettecat_icon.png")
@@ -27,6 +33,7 @@ class MainWindow(QMainWindow):
 
         self.queue_manager = QueueManager(self)
         self.player = PreviewPlayer.get_instance()
+        self._drag_pos = QPoint()
 
         self._setup_ui()
         self._connect_signals()
@@ -40,89 +47,30 @@ class MainWindow(QMainWindow):
         main_vbox.setContentsMargins(0, 0, 0, 0)
         main_vbox.setSpacing(0)
 
-        # Top area: Sidebar + Pages
+        # Content Row (NavRail + Pages Area)
         content_row = QHBoxLayout()
         content_row.setContentsMargins(0, 0, 0, 0)
         content_row.setSpacing(0)
 
-        # 1. Left Sidebar (surfaceSidebar #131211)
-        sidebar = QFrame(self)
-        sidebar.setObjectName("Sidebar")
-        sidebar_layout = QVBoxLayout(sidebar)
-        sidebar_layout.setContentsMargins(16, 24, 16, 18)
-        sidebar_layout.setSpacing(8)
+        # 1. 56px NavRail on the far left
+        self.nav_rail = NavRail(self)
+        self.nav_rail.page_changed.connect(self._set_page)
+        content_row.addWidget(self.nav_rail)
 
-        # Brand row with icon and Space Grotesk title
-        brand_row = QHBoxLayout()
-        brand_row.setSpacing(10)
-        brand_row.setAlignment(Qt.AlignmentFlag.AlignVCenter)
+        # 2. Right Main View Column (TopBar + Stacked Pages)
+        right_col = QVBoxLayout()
+        right_col.setContentsMargins(0, 0, 0, 0)
+        right_col.setSpacing(0)
 
-        icon_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets", "cassettecat_icon.png")
-        if os.path.exists(icon_path):
-            icon_label = QLabel(sidebar)
-            icon_label.setFixedSize(28, 28)
-            pix = QPixmap(icon_path).scaled(28, 28, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
-            icon_label.setPixmap(pix)
-            brand_row.addWidget(icon_label)
+        # TopBar
+        self.top_bar = TopBar(self)
+        self.top_bar.minimize_clicked.connect(self.showMinimized)
+        self.top_bar.maximize_clicked.connect(self._toggle_maximize)
+        self.top_bar.close_clicked.connect(self.close)
+        right_col.addWidget(self.top_bar)
 
-        brand_text_layout = QVBoxLayout()
-        brand_text_layout.setSpacing(1)
-
-        app_title = QLabel("CASSETTECAT", sidebar)
-        app_title.setObjectName("AppTitle")
-        brand_text_layout.addWidget(app_title)
-
-        app_sub = QLabel("MUSIC DOWNLOADER", sidebar)
-        app_sub.setObjectName("AppSubtitle")
-        brand_text_layout.addWidget(app_sub)
-
-        brand_row.addLayout(brand_text_layout)
-        sidebar_layout.addLayout(brand_row)
-
-        sidebar_layout.addSpacing(18)
-
-        # Navigation Items (NavItem.qml style)
-        self.btn_search = QPushButton("🔍  Explore", sidebar)
-        self.btn_search.setProperty("class", "NavButton")
-        self.btn_search.setCheckable(True)
-        self.btn_search.setChecked(True)
-        self.btn_search.clicked.connect(lambda: self._set_page(0))
-        sidebar_layout.addWidget(self.btn_search)
-
-        self.btn_queue = QPushButton("📥  Queue (0)", sidebar)
-        self.btn_queue.setProperty("class", "NavButton")
-        self.btn_queue.setCheckable(True)
-        self.btn_queue.clicked.connect(lambda: self._set_page(1))
-        sidebar_layout.addWidget(self.btn_queue)
-
-        self.btn_library = QPushButton("📼  Library", sidebar)
-        self.btn_library.setProperty("class", "NavButton")
-        self.btn_library.setCheckable(True)
-        self.btn_library.clicked.connect(lambda: self._set_page(2))
-        sidebar_layout.addWidget(self.btn_library)
-
-        self.btn_settings = QPushButton("⚙️  Settings", sidebar)
-        self.btn_settings.setProperty("class", "NavButton")
-        self.btn_settings.setCheckable(True)
-        self.btn_settings.clicked.connect(lambda: self._set_page(3))
-        sidebar_layout.addWidget(self.btn_settings)
-
-        sidebar_layout.addStretch(1)
-
-        # Footer version label (IBM Plex Mono)
-        version_lbl = QLabel("v1.2.0 • CassetteCat System", sidebar)
-        version_lbl.setStyleSheet("""
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 10px;
-            color: #918E88;
-        """)
-        sidebar_layout.addWidget(version_lbl)
-
-        content_row.addWidget(sidebar)
-
-        # 2. Stacked Pages
+        # Stacked Pages
         self.stack = QStackedWidget(self)
-
         self.search_page = SearchPage(self)
         self.queue_page = QueuePage(self)
         self.library_page = LibraryPage(self)
@@ -133,7 +81,9 @@ class MainWindow(QMainWindow):
         self.stack.addWidget(self.library_page)
         self.stack.addWidget(self.settings_page)
 
-        content_row.addWidget(self.stack, stretch=1)
+        right_col.addWidget(self.stack, stretch=1)
+        content_row.addLayout(right_col, stretch=1)
+
         main_vbox.addLayout(content_row, stretch=1)
 
         # 3. Bottom Player Dock (surfaceDock #151412)
@@ -142,13 +92,34 @@ class MainWindow(QMainWindow):
 
     def _set_page(self, index: int):
         self.stack.setCurrentIndex(index)
-        self.btn_search.setChecked(index == 0)
-        self.btn_queue.setChecked(index == 1)
-        self.btn_library.setChecked(index == 2)
-        self.btn_settings.setChecked(index == 3)
+        self.nav_rail.set_active_index(index)
+
+        titles = ["Explore", "Download Queue", "Library", "Settings"]
+        if 0 <= index < len(titles):
+            self.top_bar.set_title(titles[index])
 
         if index == 2:
             self.library_page.scan_library()
+
+    def _toggle_maximize(self):
+        if self.isMaximized():
+            self.showNormal()
+        else:
+            self.showMaximized()
+
+    # Window dragging for frameless title bar
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton and event.position().y() <= 48:
+            self._drag_pos = event.globalPosition().toPoint() - self.frameGeometry().topLeft()
+            event.accept()
+
+    def mouseMoveEvent(self, event):
+        if event.buttons() == Qt.MouseButton.LeftButton and not self._drag_pos.isNull():
+            self.move(event.globalPosition().toPoint() - self._drag_pos)
+            event.accept()
+
+    def mouseReleaseEvent(self, event):
+        self._drag_pos = QPoint()
 
     def _connect_signals(self):
         # Search page -> Queue
@@ -170,13 +141,7 @@ class MainWindow(QMainWindow):
 
     def _on_download_requested(self, tracks: list):
         self.queue_manager.add_tracks(tracks)
-        self._update_queue_label()
         self._set_page(1)
 
     def _on_job_finished(self, job_id: str, file_path: str, meta: dict):
         self.queue_page.mark_job_completed(job_id, file_path)
-        self._update_queue_label()
-
-    def _update_queue_label(self):
-        active_count = len(self.queue_manager.active_workers) + len(self.queue_manager.queue)
-        self.btn_queue.setText(f"📥  Queue ({active_count})")
