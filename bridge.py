@@ -329,6 +329,10 @@ class DownloaderBridge(QObject):
             lrc_path = os.path.splitext(fpath)[0] + ".lrc"
             has_lrc = os.path.exists(lrc_path)
 
+            cover_p = meta.get("cover_path") or ""
+            if cover_p and not cover_p.startswith("file:"):
+                cover_p = QUrl.fromLocalFile(os.path.abspath(cover_p)).toString()
+
             tracks.append({
                 "filePath": fpath,
                 "fileName": fname,
@@ -337,7 +341,7 @@ class DownloaderBridge(QObject):
                 "album": album,
                 "duration": f"{int(duration // 60)}:{int(duration % 60):02d}" if duration else "--:--",
                 "format": os.path.splitext(fpath)[1].replace(".", "").upper(),
-                "artworkUrl": meta.get("cover_path") or fpath,
+                "artworkUrl": cover_p,
                 "hasLyrics": has_lrc,
                 "downloaded": True
             })

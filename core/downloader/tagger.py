@@ -159,11 +159,43 @@ class AudioTagger:
             artist = f.get("artist", [""])[0] if f.get("artist") else ""
             album = f.get("album", [""])[0] if f.get("album") else ""
             duration = int(f.info.length) if hasattr(f, "info") and f.info else 0
+
+            cover_path = ""
+            try:
+                import hashlib
+                cache_dir = os.path.join(os.path.expanduser("~"), ".harmonix", "covers")
+                os.makedirs(cache_dir, exist_ok=True)
+                h = hashlib.md5(file_path.encode("utf-8")).hexdigest()
+                cached_art = os.path.join(cache_dir, f"{h}.jpg")
+
+                if os.path.exists(cached_art):
+                    cover_path = cached_art
+                else:
+                    cover_data = None
+                    raw_audio = mutagen.File(file_path)
+                    if hasattr(raw_audio, "tags") and raw_audio.tags:
+                        if hasattr(raw_audio.tags, "getall"):
+                            apics = raw_audio.tags.getall("APIC")
+                            if apics:
+                                cover_data = apics[0].data
+                        elif "covr" in raw_audio.tags and raw_audio.tags["covr"]:
+                            cover_data = bytes(raw_audio.tags["covr"][0])
+                    if not cover_data and hasattr(raw_audio, "pictures") and raw_audio.pictures:
+                        cover_data = raw_audio.pictures[0].data
+
+                    if cover_data:
+                        with open(cached_art, "wb") as cf:
+                            cf.write(cover_data)
+                        cover_path = cached_art
+            except Exception:
+                pass
+
             return {
                 "title": title,
                 "artist": artist,
                 "album": album,
-                "duration": duration
+                "duration": duration,
+                "cover_path": cover_path
             }
         except Exception:
             return {}

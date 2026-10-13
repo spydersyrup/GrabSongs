@@ -57,6 +57,17 @@ def main():
         print("FATAL: QML root objects is empty! Check warnings above.", file=sys.stderr)
         sys.exit(1)
 
+    root = engine.rootObjects()[0]
+    root.show()
+    root.raise_()
+    root.requestActivate()
+
+    try:
+        import ctypes
+        ctypes.windll.user32.SetForegroundWindow(int(root.winId()))
+    except Exception:
+        pass
+
     print("Harmonix CassetteCat QML Downloader initialized and running.", flush=True)
     sys.exit(app.exec())
 
