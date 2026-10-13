@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+
+# Upstream reference repos
+freyr-src/
+apmyx-src/
+
+# Output and temp files
+downloads/
+temp/
+scratch/
+*.log
+*.mp3
+*.m4a
+*.flac
+*.opus
