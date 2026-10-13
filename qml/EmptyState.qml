@@ -4,7 +4,7 @@ import QtQuick.Layouts
 
 Item {
     id: root
-    property string catImage: "qrc:/qt/qml/CassetteCat/assets/01-orange-headphones.png"
+    property string catImage: "../assets/01-orange-headphones.png"
     property string title: "No tracks found"
     property string subtitle: "Try adjusting your filters or search"
     property string actionLabel: ""

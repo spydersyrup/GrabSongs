@@ -19,3 +19,19 @@ scratch/
 *.m4a
 *.flac
 *.opus
+config.json
+assets/screenshots/
+
+# Explicitly track AI coding rules, documentation, and agent configurations
+!AGENTS.md
+!CLAUDE.md
+!GEMINI.md
+!DESIGN.md
+!DESIGN_SYSTEM.md
+!CODE_PATTERNS.md
+!.coderabbit.yaml
+!.agents/
+!.agents/**
+!GrabSongs.exe
+
+

@@ -18,7 +18,7 @@ Item {
             anchors.centerIn: parent
             width: composition.width * 0.78
             height: width
-            source: Qt.resolvedUrl("../assets/vinyl_record.svg")
+            source: "../assets/vinyl_record.svg"
             sourceSize.width: Math.ceil(width * 2)
             smooth: true
 
@@ -26,7 +26,7 @@ Item {
                 anchors.centerIn: parent
                 width: parent.width * 0.305
                 height: width
-                source: Qt.resolvedUrl("../assets/cassettecat_icon.png")
+                source: "image://cover/0.5/../assets/cassettecat_icon.png"
                 sourceSize.width: Math.ceil(width * Screen.devicePixelRatio)
                 sourceSize.height: Math.ceil(height * Screen.devicePixelRatio)
             }
@@ -44,7 +44,7 @@ Item {
             y: composition.height * 0.035
             width: composition.width * 0.16
             height: width * 310 / 80
-            source: Qt.resolvedUrl("../assets/vinyl_tonearm.svg")
+            source: "../assets/vinyl_tonearm.svg"
             sourceSize.width: Math.ceil(width * 2)
             sourceSize.height: Math.ceil(height * 2)
             smooth: true

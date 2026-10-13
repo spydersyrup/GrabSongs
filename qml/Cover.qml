@@ -31,21 +31,34 @@ Item {
         return "file:///" + str.replace(/\\/g, "/")
     }
 
-    readonly property bool providerRounded: false
+    // Local artwork is cropped and rounded by the cover image provider; only web images need the mask layers below.
+    readonly property bool providerRounded: {
+        const src = rawArtworkSource.toString()
+        return fillMode === Image.PreserveAspectCrop && (src.startsWith("file:") || src.startsWith("image://cover/"))
+    }
 
-    readonly property url artworkSource: rawArtworkSource
+    readonly property url artworkSource: {
+        const src = rawArtworkSource.toString()
+        if (!providerRounded) return src
+        const shortSide = Math.min(width, height)
+        if (shortSide < 1) return ""
+        const fraction = Math.min(0.5, radius / shortSide).toFixed(3)
+        return src.startsWith("image://cover/")
+            ? "image://cover/" + fraction + src.slice(src.indexOf("/", 14))
+            : "image://cover/" + fraction + "/" + src
+    }
 
     readonly property url rawArtworkSource: {
+        // Depend on the remote revision so lazily downloaded server artwork appears.
+        streaming.remoteArtRevision
         const currentTrack = root.track || ({})
         if (currentTrack.artworkUrl) return normalizeUrl(currentTrack.artworkUrl)
-        if (currentTrack.artwork_url) return normalizeUrl(currentTrack.artwork_url)
-        if (currentTrack.cover_url) return normalizeUrl(currentTrack.cover_url)
-        if (currentTrack.cover) return normalizeUrl(currentTrack.cover)
-        if (currentTrack.artwork) return normalizeUrl(currentTrack.artwork)
-        if (currentTrack.thumbnail) return normalizeUrl(currentTrack.thumbnail)
         const path = currentTrack.filePath || ""
         if (!path) return ""
-        return normalizeUrl(path)
+        if (path.startsWith("subsonic:") || path.startsWith("jellyfin:")) {
+            return normalizeUrl(streaming.remoteArtwork(path))
+        }
+        return normalizeUrl(library.artworkFor(path))
     }
 
     property bool useB: false
@@ -67,7 +80,8 @@ Item {
     readonly property bool anyArtVisible: (imageA.status === Image.Ready && !hasNoArt(imageA) && imageA.opacity > 0.01)
                                        || (imageB.status === Image.Ready && !hasNoArt(imageB) && imageB.opacity > 0.01)
     readonly property bool showingFallback: (!hasArtwork || currentHasError) && !anyArtVisible
-    readonly property bool currentTrackPlaying: !!(typeof player !== "undefined" && player && player.isPlaying && root.track && player.currentTrack && root.track.filePath === player.currentTrack.filePath)
+    readonly property bool currentTrackPlaying: player.isPlaying && root.track && player.currentTrack
+                                              && root.track.filePath === player.currentTrack.filePath
 
     function coverColor(value) {
         const colors = [

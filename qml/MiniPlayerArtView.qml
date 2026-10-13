@@ -30,7 +30,7 @@ Item {
             anchors.centerIn: parent
             width: 64
             height: 64
-            source: "qrc:/qt/qml/CassetteCat/assets/cassettecat_icon.png"
+            source: "../assets/cassettecat_icon.png"
             fillMode: Image.PreserveAspectFit
         }
     }

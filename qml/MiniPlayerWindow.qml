@@ -373,7 +373,7 @@ Window {
                         Image {
                             anchors.centerIn: parent
                             width: 26; height: 26
-                            source: "qrc:/qt/qml/CassetteCat/assets/cassettecat_icon.png"
+                            source: "../assets/cassettecat_icon.png"
                             fillMode: Image.PreserveAspectFit
                             visible: !(player.currentTrack && player.currentTrack.filePath)
                         }

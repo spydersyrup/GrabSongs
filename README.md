@@ -1,108 +1,87 @@
-# Harmonix — Unified Multi-Platform Music Downloader
+# GrabSongs — Multi-Platform Music Downloader Service
 
-**Harmonix** is a modern, high-performance desktop music downloader with a sleek PyQt6 graphical user interface. It combines the universal multi-streaming service engine of **[freyr-js](https://github.com/miraclx/freyr-js)** with the intuitive, native desktop experience and queue management of **[apmyx-gui](https://github.com/rwnk-12/apmyx-gui)**.
+**GrabSongs** is a standalone, high-performance desktop music downloader service built with an authentic tactile CassetteCat design system. It combines multi-platform metadata scrapers and audio stream extractors into a seamless experience with zero credentials or accounts required.
 
 ---
 
-## 🌟 Highlights & Key Differences
+## 🌟 Studied Implementations & Architecture Inspiration
 
-| Feature | `miraclx/freyr-js` | `rwnk-12/apmyx-gui` | **Harmonix (This Project)** |
-| :--- | :---: | :---: | :---: |
-| **Interface** | CLI only | PyQt6 GUI | **Modern Dark PyQt6 GUI** |
-| **Platforms Supported** | Spotify, Apple, Deezer, YouTube | Apple Music only | **Spotify, Apple Music, Deezer, YouTube & Direct Search** |
-| **Account / Token Needed** | Optional | Required (Token + WSL Decryptor) | **None required (Zero configuration needed)** |
-| **Audio Matching Engine** | Secondary stream matcher | Direct DRM decryption | **High-speed `yt-dlp` stream extraction** |
-| **Audio Formats** | M4A, MP3 | AAC, ALAC, Atmos | **MP3 (320k), M4A (256k), FLAC (Lossless), OPUS** |
-| **Lyrics** | Basic / external | Synchronized TTML | **Automatic LRCLIB integration (Synced & Plain LRC)** |
-| **Built-in Audio Preview Player** | ❌ No | ✅ Yes | **✅ Yes (Integrated QtMultimedia player)** |
-| **Interactive Selection Checklist** | ❌ No | ✅ Yes | **✅ Yes (Pick individual tracks from albums/playlists)** |
+GrabSongs synthesizes architecture and techniques from leading open-source music tools:
+
+- **[miraclx/freyr-js](https://github.com/miraclx/freyr-js)**: Universal multi-service scraping concepts and metadata resolution across streaming providers.
+- **[rwnk-12/apmyx-gui](https://github.com/rwnk-12/apmyx-gui)**: Desktop GUI queue management, concurrent workers, and track-selection checklist workflows.
+- **[ots-downloader/onthespot](https://github.com/ots-downloader/onthespot)**: Multi-service provider architecture (Spotify, Apple Music, Deezer, YouTube).
+- **[spotbye/SpotiFLAC](https://github.com/spotbye/SpotiFLAC)**: Direct track resolution and high-bitrate audio matching without requiring paid accounts.
+- **[sunnypatell/sunnify-spotify-downloader](https://github.com/sunnypatell/sunnify-spotify-downloader)**: Playlist tracklist extraction and automated batch job queues.
+- **[henriquesebastiao/downtify](https://github.com/henriquesebastiao/downtify)**: Audio tagging, cover art embedding, and clean local library storage patterns.
+- **[Shubhamrawat5/apple-playlist-downloader](https://github.com/Shubhamrawat5/apple-playlist-downloader)**: Apple Music storefront and album catalog scraping mechanisms.
 
 ---
 
 ## ✨ Features
 
-- **Universal Link Auto-Detection:** Paste any URL from Spotify, Apple Music, Deezer, or YouTube. Harmonix automatically identifies the service with a visual badge.
-- **Direct Search Exploration:** Don't have a URL? Just type song names, artists, or albums into the search bar to query rich catalog metadata.
-- **Interactive Track Picker:** View full album and playlist tracklists with album art thumbnails, duration, and track numbers. Check/uncheck specific songs to download only what you want.
-- **Automated Lyrics Engine:** Automatically fetches synchronized (`.lrc` timestamps) and plain text lyrics via [LRCLIB](https://lrclib.net/) and embeds them directly into audio tags.
-- **Rich Metadata & HD Artwork:** High-resolution cover artwork (up to 1400x1400) and complete ID3v2 / MP4 / Vorbis tags (Artist, Title, Album, Track/Disc Number, Year, Genre) written via `mutagen`.
-- **Live Download Queue:** Monitor concurrent downloads with real-time percentage progress bars, download speed (MB/s), ETA countdown, and status badges.
-- **Embedded Preview Player:** Built-in audio playback bar at the bottom to preview downloaded songs instantly without leaving the application.
-- **Zero-Config FFmpeg:** Automatically discovers FFmpeg on your system PATH or utilizes the bundled high-performance FFmpeg binary from `imageio-ffmpeg`.
+- **Universal Link Auto-Detection:** Paste links from Spotify, Apple Music, Deezer, or YouTube. GrabSongs instantly identifies the provider and extracts track metadata.
+- **Direct Catalog Search:** Search tracks directly across Spotify, Apple Music, Deezer, or YouTube without needing URLs.
+- **Tactile CassetteCat UI:** Pure Qt Quick / QML interface using the warm dark surface palette (`#0B0A09` to `#282623`), crisp Space Grotesk / IBM Plex typography, and custom tactile controls (`TransportButton`, `PressDepthIconButton`, `FilterChip`).
+- **320 kbps MP3 Conversion:** High-fidelity conversion powered by `yt-dlp` and auto-detected system or bundled FFmpeg.
+- **Synchronized Lyrics:** Automated fetching of synchronized (`.lrc` timestamps) and unsynced lyrics via [LRCLIB](https://lrclib.net/) embedded directly into ID3 tags.
+- **Complete ID3v2 Tagging:** Mutagen-powered tagging for Title, Artist, Album, Year, Track Number, and high-resolution cover artwork.
+- **Full Concurrency & Queue Control:** Concurrent background download workers with progress tracking, speed indicators, and failure recovery.
+- **Single-Click Native Windows Launcher:** Launch with `GrabSongs.exe`, `run.bat`, or `python app.py`.
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Getting Started
 
-### 1. Prerequisites
+### Prerequisites
+
 - Python 3.10+
-- Windows, macOS, or Linux
+- Windows 10/11 (or Linux/macOS with Qt 6)
+- Dependencies: `pip install -r requirements.txt`
 
-### 2. Installation
-
-Clone this repository and install dependencies:
-
-```bash
-git clone https://github.com/your-username/harmonix.git
-cd harmonix
-pip install -r requirements.txt
-```
-
-### 3. Launch the Application
+### Running the App
 
 ```bash
+# Option 1: Double click or run the compiled launcher
+GrabSongs.exe
+
+# Option 2: Run via batch script
+run.bat
+
+# Option 3: Run directly with Python
 python app.py
 ```
 
 ---
 
-## 📁 Project Structure
+## 📁 Repository Structure
 
 ```
-├── app.py                      # Main application entry point
+├── app.py                      # GrabSongs main application entry point
+├── bridge.py                   # PyQt6 / QML bridge & models
+├── GrabSongsLauncher.cs        # C# source for GrabSongs.exe
+├── GrabSongs.exe               # Compiled native Windows launcher
 ├── requirements.txt            # Python dependencies
+├── AGENTS.md                   # AI Coding Agent engineering rules
+├── CLAUDE.md                   # Core architecture and style guide
+├── GEMINI.md                   # Gemini engineering guidelines
+├── DESIGN.md                   # Design tokens & color ladder
+├── DESIGN_SYSTEM.md            # Component catalog & interaction specs
+├── CODE_PATTERNS.md            # Established codebase patterns
+├── CHAT_LOG.md                 # Full chronological development chat transcript
 ├── core/
-│   ├── config.py               # User settings manager & FFmpeg detector
-│   ├── audio_player.py         # Qt preview audio player
-│   ├── metadata/
-│   │   ├── __init__.py         # Unified MetadataResolver
-│   │   ├── detector.py         # URL and service regex detector
-│   │   ├── spotify.py          # Spotify embed & oEmbed extractor
-│   │   ├── apple_music.py      # Apple Music & iTunes lookup client
-│   │   ├── deezer.py           # Deezer API client & search
-│   │   ├── youtube.py          # YouTube & YT Music extractor
-│   │   └── lyrics.py           # LRCLIB synchronized lyrics client
-│   └── downloader/
-│       ├── worker.py           # QThread yt-dlp download & postprocessing worker
-│       ├── queue_manager.py    # Concurrency control & job dispatcher
-│       └── tagger.py           # Mutagen ID3/MP4/FLAC metadata & artwork embedder
-└── ui/
-    ├── styles.py               # Modern dark/glassmorphic QSS stylesheet
-    ├── main_window.py          # Main application window & sidebar navigation
-    ├── widgets/
-    │   ├── badge.py            # Platform source badge
-    │   ├── track_card.py       # Track preview card with artwork thumbnail
-    │   ├── queue_item.py       # Active download card with live progress bar
-    │   └── player_bar.py       # Docked audio preview player bar
-    └── pages/
-        ├── search_page.py      # Link parser & track selection page
-        ├── queue_page.py       # Active download queue management page
-        ├── library_page.py     # Local downloaded library page
-        └── settings_page.py    # Quality, format, folder & naming preferences
+│   ├── config.py               # User preferences & FFmpeg auto-detection
+│   ├── metadata/               # Multi-platform scrapers (Spotify, Apple, Deezer, YouTube, LRCLIB)
+│   └── downloader/             # yt-dlp downloader, queue manager & mutagen tagger
+└── qml/
+    ├── GrabSongsMain.qml       # Main GrabSongs application shell
+    ├── DownloadPage.qml        # Queue & download manager view
+    ├── LucideIcon.qml          # SVG vector icon renderer
+    └── ...                     # Shared CassetteCat tactile UI components
 ```
-
----
-
-## ⚙️ Customization & Settings
-
-Inside the **Settings** tab in the app, you can configure:
-- **Download Location:** Choose your music folder.
-- **Audio Format:** Choose between MP3, M4A, FLAC, or OPUS.
-- **Bitrate:** Choose between 320 kbps, 256 kbps, 192 kbps, or Lossless.
-- **File Naming Pattern:** Customize file names using `{artist}`, `{title}`, `{album}`, and `{track}` (e.g. `{artist} - {title}`).
-- **Lyrics Options:** Choose whether to embed synced lyrics into tags and/or export separate `.lrc` files alongside the song.
 
 ---
 
 ## 📜 License
-Licensed under the [Apache License 2.0](LICENSE).
+
+Licensed under the [GNU General Public License v3.0](LICENSE).

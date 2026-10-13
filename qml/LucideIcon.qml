@@ -13,7 +13,7 @@ Item {
     Image {
         id: iconImg
         anchors.fill: parent
-        source: root.icon ? (Qt.resolvedUrl("icons/" + root.icon + ".svg")) : ""
+        source: root.icon ? Qt.resolvedUrl("icons/" + root.icon + ".svg") : ""
         sourceSize.width: Math.max(1, root.width * 2)
         sourceSize.height: Math.max(1, root.height * 2)
         fillMode: Image.PreserveAspectFit

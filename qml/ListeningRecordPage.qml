@@ -347,7 +347,7 @@ Item {
     EmptyState {
         anchors.centerIn: parent
         visible: !root.hasData
-        catImage: "qrc:/qt/qml/CassetteCat/assets/06-calico-player.png"
+        catImage: "../assets/06-calico-player.png"
         title: "No listening history yet"
         subtitle: "Play songs most of the way through to record your listening stats and build your personal record"
         actionLabel: "Explore Library"
@@ -1013,7 +1013,7 @@ Item {
                 EmptyState {
                     anchors.fill: parent
                     visible: root.filteredTracks.length === 0
-                    catImage: "qrc:/qt/qml/CassetteCat/assets/01-orange-headphones.png"
+                    catImage: "../assets/01-orange-headphones.png"
                     title: root.searchQuery.trim().length > 0 ? "No Tracks Found" : "No Plays Recorded"
                     subtitle: root.searchQuery.trim().length > 0 ? ("No tracks match \"" + root.searchQuery + "\"") : "Play songs most of the way through to record your top tracks"
                     actionLabel: root.searchQuery.trim().length > 0 ? "Clear Search" : "Explore Library"
@@ -1060,7 +1060,7 @@ Item {
                 EmptyState {
                     anchors.fill: parent
                     visible: root.filteredArtists.length === 0
-                    catImage: "qrc:/qt/qml/CassetteCat/assets/04-gray-dancing-headphones.png"
+                    catImage: "../assets/04-gray-dancing-headphones.png"
                     title: root.searchQuery.trim().length > 0 ? "No Artists Found" : "No Artists Recorded"
                     subtitle: root.searchQuery.trim().length > 0 ? ("No artists match \"" + root.searchQuery + "\"") : "Artists with qualified plays will appear here"
                     actionLabel: root.searchQuery.trim().length > 0 ? "Clear Search" : "Explore Library"
@@ -1108,7 +1108,7 @@ Item {
                 EmptyState {
                     anchors.fill: parent
                     visible: root.filteredAlbums.length === 0
-                    catImage: "qrc:/qt/qml/CassetteCat/assets/01-orange-headphones.png"
+                    catImage: "../assets/01-orange-headphones.png"
                     title: root.searchQuery.trim().length > 0 ? "No Albums Found" : "No Albums Recorded"
                     subtitle: root.searchQuery.trim().length > 0 ? ("No albums match \"" + root.searchQuery + "\"") : "Albums with qualified plays will appear here"
                     actionLabel: root.searchQuery.trim().length > 0 ? "Clear Search" : "Explore Library"
@@ -1144,7 +1144,7 @@ Item {
                 EmptyState {
                     anchors.fill: parent
                     visible: root.filteredHistory.length === 0
-                    catImage: "qrc:/qt/qml/CassetteCat/assets/06-calico-player.png"
+                    catImage: "../assets/06-calico-player.png"
                     title: root.searchQuery.trim().length > 0 ? "No History Found" : "No History Recorded"
                     subtitle: root.searchQuery.trim().length > 0 ? ("No tracks match \"" + root.searchQuery + "\"") : "Playback history will appear here as you listen to music"
                     actionLabel: root.searchQuery.trim().length > 0 ? "Clear Search" : "Explore Library"
@@ -1218,7 +1218,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.preferredHeight: 320
                         visible: !root.recapHasPlays
-                        catImage: "qrc:/qt/qml/CassetteCat/assets/06-calico-player.png"
+                        catImage: "../assets/06-calico-player.png"
                         title: "Nothing recorded for " + root.recapPeriod + " yet"
                         subtitle: "Songs you play most of the way through are counted here, with the date you played them"
                     }

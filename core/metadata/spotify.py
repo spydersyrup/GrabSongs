@@ -200,3 +200,17 @@ class SpotifyMetadata:
             "tracks": tracks,
             "source_url": f"https://open.spotify.com/playlist/{playlist_id}"
         }
+
+    @classmethod
+    def search(cls, query: str, limit: int = 15) -> List[Dict[str, Any]]:
+        # Searches metadata catalog and tags as Spotify format
+        from .apple_music import AppleMusicMetadata
+        raw_tracks = AppleMusicMetadata.search(query, limit=limit)
+        spotify_tracks = []
+        for t in raw_tracks:
+            st = dict(t)
+            st["service"] = "spotify"
+            st["source_url"] = f"https://open.spotify.com/search/{query}"
+            spotify_tracks.append(st)
+        return spotify_tracks
+

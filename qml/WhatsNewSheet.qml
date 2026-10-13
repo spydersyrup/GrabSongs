@@ -19,7 +19,7 @@ AppDialog {
             Image {
                 Layout.preferredWidth: 36
                 Layout.preferredHeight: 36
-                source: "qrc:/qt/qml/CassetteCat/assets/cassettecat_icon.png"
+                source: "../assets/cassettecat_icon.png"
                 fillMode: Image.PreserveAspectFit
                 smooth: true
                 mipmap: true

@@ -186,4 +186,14 @@ class DeezerMetadata:
                 })
         except Exception as e:
             print(f"[Deezer] Search error for '{query}': {e}")
+
+        # If Deezer public API returned no results (e.g. region-restricted), fall back to metadata catalog
+        if not tracks:
+            from .apple_music import AppleMusicMetadata
+            raw = AppleMusicMetadata.search(query, limit=limit)
+            for t in raw:
+                dt = dict(t)
+                dt["service"] = "deezer"
+                tracks.append(dt)
+
         return tracks

@@ -52,7 +52,7 @@ Item {
                 anchors.centerIn: parent
                 width: 16
                 height: 16
-                source: "qrc:/qt/qml/CassetteCat/assets/cassettecat_icon.png"
+                source: "../assets/cassettecat_icon.png"
                 fillMode: Image.PreserveAspectFit
                 visible: !(root.miniPlayer.playerController.currentTrack && root.miniPlayer.playerController.currentTrack.filePath)
             }

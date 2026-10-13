@@ -35,16 +35,20 @@ class PROCESS_INFORMATION(ctypes.Structure):
 
 def launch_on_interactive_desktop():
     cwd = os.path.dirname(os.path.abspath(__file__))
-    python_exe = sys.executable
-    cmd = f'"{python_exe}" "{os.path.join(cwd, "app.py")}"'
+    songrip_exe = os.path.join(cwd, "SongRip.exe")
+    if os.path.exists(songrip_exe):
+        cmd = f'"{songrip_exe}"'
+    else:
+        python_exe = sys.executable.replace("python.exe", "pythonw.exe")
+        cmd = f'"{python_exe}" "{os.path.join(cwd, "app.py")}"'
     
     si = STARTUPINFO()
     si.cb = ctypes.sizeof(STARTUPINFO)
     si.lpDesktop = "WinSta0\\Default"
     pi = PROCESS_INFORMATION()
 
-    # 0x00000010 = CREATE_NEW_CONSOLE
-    flags = 0x00000010
+    # 0x08000000 = CREATE_NO_WINDOW
+    flags = 0x08000000
     
     success = ctypes.windll.kernel32.CreateProcessW(
         None,

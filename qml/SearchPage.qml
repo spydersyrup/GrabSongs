@@ -445,7 +445,7 @@ Item {
             EmptyState {
                 anchors.centerIn: parent
                 visible: root.libraryModel.visibleTrackCount === 0
-                catImage: "qrc:/qt/qml/CassetteCat/assets/01-orange-headphones.png"
+                catImage: "../assets/01-orange-headphones.png"
                 title: "No matching tracks"
                 subtitle: "Try a different search or clear the format filter"
                 actionLabel: "Clear Search"
@@ -663,7 +663,7 @@ Item {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 300
                     visible: root.libraryModel.trackCount === 0
-                    catImage: "qrc:/qt/qml/CassetteCat/assets/01-orange-headphones.png"
+                    catImage: "../assets/01-orange-headphones.png"
                     title: "No Music in Library"
                     subtitle: "Choose a music folder in Settings to start exploring"
                     actionLabel: "Open Settings"

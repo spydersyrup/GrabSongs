@@ -111,3 +111,51 @@ class YouTubeMetadata:
         except Exception as e:
             print(f"[YouTube] Error extracting playlist: {e}")
             return None
+
+    @classmethod
+    def search(cls, query: str, limit: int = 15) -> List[Dict[str, Any]]:
+        ydl_opts = {
+            'extract_flat': True,
+            'skip_download': True,
+            'quiet': True,
+            'no_warnings': True,
+        }
+        tracks: List[Dict[str, Any]] = []
+        try:
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                info = ydl.extract_info(f"ytsearch{limit}:{query}", download=False)
+                for idx, entry in enumerate(info.get("entries", []) if info else [], start=1):
+                    if not entry:
+                        continue
+                    title = entry.get("title", "")
+                    uploader = entry.get("uploader") or entry.get("channel") or "YouTube"
+                    video_id = entry.get("id", "")
+                    duration = entry.get("duration", 0)
+                    thumbnail = entry.get("thumbnail") or (entry.get("thumbnails", [{}])[-1].get("url") if entry.get("thumbnails") else f"https://i.ytimg.com/vi/{video_id}/hqdefault.jpg")
+
+                    artist = uploader
+                    track_title = title
+                    if " - " in title:
+                        parts = title.split(" - ", 1)
+                        artist = parts[0].strip()
+                        track_title = parts[1].strip()
+
+                    tracks.append({
+                        "id": video_id,
+                        "service": "youtube",
+                        "type": "track",
+                        "title": track_title,
+                        "artist": artist,
+                        "artists": [artist],
+                        "album": "YouTube Music",
+                        "cover_url": thumbnail,
+                        "duration": int(duration) if duration else 0,
+                        "track_number": idx,
+                        "disc_number": 1,
+                        "source_url": f"https://www.youtube.com/watch?v={video_id}",
+                        "search_query": f"{artist} - {track_title}"
+                    })
+        except Exception as e:
+            print(f"[YouTube] Search error: {e}")
+        return tracks
+

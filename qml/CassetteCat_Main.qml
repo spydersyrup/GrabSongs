@@ -3324,7 +3324,7 @@ ApplicationWindow {
                     x: sidebarCollapsed ? Math.round((sidebarPanel.width - width) / 2) : 16
                     width: 28
                     height: 28
-                    source: "qrc:/qt/qml/CassetteCat/assets/cassettecat_icon.png"
+                    source: "../assets/cassettecat_icon.png"
                     fillMode: Image.PreserveAspectFit
                     smooth: true
                     mipmap: true
@@ -4275,7 +4275,7 @@ ApplicationWindow {
                             anchors.centerIn: parent
                             width: 34
                             height: 34
-                            source: "qrc:/qt/qml/CassetteCat/assets/06-calico-player.png"
+                            source: "../assets/06-calico-player.png"
                             fillMode: Image.PreserveAspectFit
                             visible: !shownPlayer.currentTrack.filePath && !shownPlayer.currentTrack.artworkUrl
                         }

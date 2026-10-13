@@ -248,7 +248,7 @@ Item {
     EmptyState {
         anchors.fill: parent
         visible: root.allPlaylists.length === 0
-        catImage: "qrc:/qt/qml/CassetteCat/assets/02-black-cat-cassette.png"
+        catImage: "../assets/02-black-cat-cassette.png"
         title: "No Playlists Found"
         subtitle: "No playlists match \"" + root.appWindow.libSearchQuery + "\""
         actionLabel: "Clear Search"

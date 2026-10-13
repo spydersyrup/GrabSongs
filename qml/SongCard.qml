@@ -12,7 +12,6 @@ CardBase {
     property bool isPlaying: isCurrent && player.isPlaying
 
     signal favoriteClicked()
-    signal downloadClicked()
 
     accessibleName: root.track.title || root.track.fileName || ""
     onRightClicked: contextMenu.popup()
@@ -41,60 +40,6 @@ CardBase {
                     anchors.fill: parent
                     track: root.track
                     radius: coverContainer.radius
-                }
-
-                Rectangle {
-                    anchors.left: parent.left
-                    anchors.top: parent.top
-                    anchors.margins: 6
-                    height: 18
-                    radius: 4
-                    color: Qt.rgba(0, 0, 0, 0.75)
-                    visible: !!(root.track && root.track.service)
-                    z: 10
-                    implicitWidth: badgeLabel.implicitWidth + 10
-
-                    Label {
-                        id: badgeLabel
-                        anchors.centerIn: parent
-                        text: (root.track && root.track.service ? root.track.service : "").toUpperCase()
-                        color: recordRedHover
-                        font.family: monoFont
-                        font.pixelSize: 9
-                        font.weight: Font.Bold
-                    }
-                }
-
-                Rectangle {
-                    id: dlBtn
-                    anchors.right: parent.right
-                    anchors.bottom: parent.bottom
-                    anchors.margins: 8
-                    width: 32
-                    height: 32
-                    radius: 16
-                    color: dlMouse.containsMouse ? recordRedHover : recordRed
-                    visible: root.highlighted || (root.track && root.track.downloaded)
-                    z: 10
-
-                    LucideIcon {
-                        anchors.centerIn: parent
-                        width: 16
-                        height: 16
-                        icon: root.track && root.track.downloaded ? "check" : "arrow-down"
-                        color: "#FFFFFF"
-                    }
-
-                    MouseArea {
-                        id: dlMouse
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: mouse => {
-                            mouse.accepted = true
-                            root.downloadClicked()
-                        }
-                    }
                 }
             }
         }

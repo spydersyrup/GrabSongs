@@ -501,7 +501,7 @@ Item {
             EmptyState {
                 anchors.fill: parent
                 visible: !root.appWindow.radioLoading && root.displayedStations.length === 0
-                catImage: "qrc:/qt/qml/CassetteCat/assets/06-calico-player.png"
+                catImage: "../assets/06-calico-player.png"
                 readonly property bool hasQuery: (root.appWindow.radioSearchQuery || "").trim().length > 0
                 readonly property bool sourceEmpty: {
                     if (root.appWindow.radioActiveTag === "FAVORITES") return (root.appWindow.radioFavoriteStations || []).length === 0

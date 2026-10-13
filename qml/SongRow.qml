@@ -32,7 +32,6 @@ Rectangle {
 
     signal clicked(var modifiers)
     signal favoriteClicked()
-    signal downloadClicked()
 
     readonly property bool highlighted: rowMouse.containsMouse || (activeFocus && !mouseFocused)
     property bool mouseFocused: false
@@ -209,7 +208,7 @@ Rectangle {
                 width: 16
                 height: 16
                 icon: "heart"
-                color: (typeof isFavorite !== "undefined" && isFavorite(root.track ? root.track.filePath : "")) ? recordRed : (root.highlighted ? textSecondary : "transparent")
+                color: isFavorite(root.track ? root.track.filePath : "") ? recordRed : (root.highlighted ? textSecondary : "transparent")
             }
 
             MouseArea {
@@ -218,39 +217,6 @@ Rectangle {
                 onClicked: {
                     if (root.track && root.track.filePath) {
                         root.favoriteClicked()
-                    }
-                }
-            }
-        }
-
-        Item {
-            Layout.alignment: Qt.AlignVCenter
-            Layout.preferredWidth: 28
-            Layout.preferredHeight: 28
-
-            Rectangle {
-                anchors.centerIn: parent
-                width: 26
-                height: 26
-                radius: 13
-                color: dlRowMouse.containsMouse ? recordRed : (root.track && root.track.downloaded ? surfaceElevated : "transparent")
-
-                LucideIcon {
-                    anchors.centerIn: parent
-                    width: 14
-                    height: 14
-                    icon: root.track && root.track.downloaded ? "check" : "arrow-down"
-                    color: root.track && root.track.downloaded ? success : (dlRowMouse.containsMouse ? "#FFFFFF" : recordRedHover)
-                }
-
-                MouseArea {
-                    id: dlRowMouse
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: {
-                        mouse.accepted = true
-                        root.downloadClicked()
                     }
                 }
             }
@@ -272,7 +238,7 @@ Rectangle {
             Layout.alignment: Qt.AlignVCenter
             Layout.preferredWidth: 44
             horizontalAlignment: Text.AlignRight
-            text: root.track ? (root.track.duration || root.track.duration_formatted || "-") : "-"
+            text: root.track ? (root.track.duration || "-") : "-"
             color: textSecondary
             font.family: monoFont
             font.pixelSize: 12

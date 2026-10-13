@@ -1,9 +1,7 @@
 @echo off
-title Harmonix Music Downloader
+title GrabSongs Music Downloader
 cd /d "%~dp0"
-echo ====================================================
-echo   Starting Harmonix Music Downloader...
-echo ====================================================
+echo Starting GrabSongs Music Downloader Service...
 python app.py
 echo.
 echo Process exited with code %ERRORLEVEL%.

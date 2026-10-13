@@ -545,7 +545,7 @@ Item {
                 EmptyState {
                     anchors.fill: parent
                     visible: !streamingController.remoteLibraryLoading && trackList.count === 0
-                    catImage: "qrc:/qt/qml/CassetteCat/assets/01-orange-headphones.png"
+                    catImage: "../assets/01-orange-headphones.png"
                     title: root.searchQuery.length > 0 ? "No Results" : "No Tracks Yet"
                     subtitle: root.searchQuery.length > 0 ? "No tracks match your search" : "Refresh to pull your " + root.serviceName + " library"
                     actionLabel: root.searchQuery.length > 0 ? "Clear Search" : "Refresh Now"
@@ -561,7 +561,7 @@ Item {
             EmptyState {
                 anchors.fill: parent
                 visible: !streamingController.remoteLibraryLoading && trackGrid.visible && trackGrid.count === 0
-                catImage: "qrc:/qt/qml/CassetteCat/assets/01-orange-headphones.png"
+                catImage: "../assets/01-orange-headphones.png"
                 title: root.activeTab === "playlists" ? "No Playlists" : (root.searchQuery.length > 0 ? "No Results" : "No Tracks Yet")
                 subtitle: root.activeTab === "playlists" ? "Playlists are not available from this server" : (root.searchQuery.length > 0 ? "No tracks match your search" : "Refresh to pull your " + root.serviceName + " library")
                 actionLabel: root.activeTab === "playlists" ? "Refresh Now" : (root.searchQuery.length > 0 ? "Clear Search" : "Refresh Now")

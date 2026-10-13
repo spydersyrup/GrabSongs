@@ -338,7 +338,7 @@ Item {
                 EmptyState {
                     anchors.fill: parent
                     visible: root.libraryModel.visibleTrackCount === 0
-                    catImage: "qrc:/qt/qml/CassetteCat/assets/01-orange-headphones.png"
+                    catImage: "../assets/01-orange-headphones.png"
                     title: "No Songs Found"
                     subtitle: "Try resetting format filters or changing search keywords"
                     actionLabel: "Reset Filters"
@@ -410,7 +410,7 @@ Item {
                 EmptyState {
                     anchors.fill: parent
                     visible: parent.curArtists.length === 0
-                    catImage: "qrc:/qt/qml/CassetteCat/assets/04-gray-dancing-headphones.png"
+                    catImage: "../assets/04-gray-dancing-headphones.png"
                     title: "No Artists Found"
                     subtitle: "No artists match your current search query"
                     actionLabel: "Clear Search"
@@ -482,7 +482,7 @@ Item {
                 EmptyState {
                     anchors.fill: parent
                     visible: parent.curAlbums.length === 0
-                    catImage: "qrc:/qt/qml/CassetteCat/assets/02-black-cat-cassette.png"
+                    catImage: "../assets/02-black-cat-cassette.png"
                     title: "No Albums Found"
                     subtitle: "No albums match your current search query"
                     actionLabel: "Clear Search"
@@ -546,7 +546,7 @@ Item {
                 EmptyState {
                     anchors.fill: parent
                     visible: parent.curGenres.length === 0
-                    catImage: "qrc:/qt/qml/CassetteCat/assets/03-cream-cassette-hug.png"
+                    catImage: "../assets/03-cream-cassette-hug.png"
                     title: "No Genres Found"
                     subtitle: "No audio genres matched your search"
                     actionLabel: "Clear Search"
@@ -608,7 +608,7 @@ Item {
                 EmptyState {
                     anchors.fill: parent
                     visible: parent.curFolders.length === 0
-                    catImage: "qrc:/qt/qml/CassetteCat/assets/03-cream-cassette-hug.png"
+                    catImage: "../assets/03-cream-cassette-hug.png"
                     title: "No Folders Found"
                     subtitle: "No audio folders matched your search"
                     actionLabel: "Clear Search"
