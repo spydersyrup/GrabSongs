@@ -1,9 +1,10 @@
 @echo off
-title Harmonix Downloader
+title Harmonix Music Downloader
 cd /d "%~dp0"
+echo ====================================================
+echo   Starting Harmonix Music Downloader...
+echo ====================================================
 python app.py
-if %ERRORLEVEL% NEQ 0 (
-    echo.
-    echo An error occurred while launching Harmonix.
-    pause
-)
+echo.
+echo Process exited with code %ERRORLEVEL%.
+pause
