@@ -10,7 +10,6 @@ from ..widgets.track_card import TrackCard
 from core.metadata import MetadataResolver
 from core.metadata.detector import ServiceDetector
 
-
 class MetadataFetchWorker(QThread):
     finished_signal = pyqtSignal(dict) # result dict
 
@@ -34,23 +33,34 @@ class SearchPage(QWidget):
 
     def _setup_ui(self):
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(28, 24, 28, 20)
+        layout.setContentsMargins(32, 28, 32, 24)
         layout.setSpacing(18)
 
-        # Header Title
+        # Header Title (Space Grotesk)
         title_label = QLabel("Explore & Download", self)
-        title_label.setStyleSheet("font-size: 22px; font-weight: 800; color: #FFFFFF;")
+        title_label.setStyleSheet("""
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: #F5F0EC;
+            letter-spacing: -0.3px;
+        """)
         layout.addWidget(title_label)
 
-        sub_label = QLabel("Paste any Spotify, Apple Music, Deezer, YouTube link, or type a song / artist name.", self)
-        sub_label.setStyleSheet("font-size: 13px; color: #8C8C9E; margin-bottom: 4px;")
+        sub_label = QLabel("Paste any link from Spotify, Apple Music, Deezer, YouTube, or search across music catalogs.", self)
+        sub_label.setStyleSheet("""
+            font-family: 'IBM Plex Sans', sans-serif;
+            font-size: 13px;
+            color: #A8A49E;
+            margin-bottom: 2px;
+        """)
         layout.addWidget(sub_label)
 
         # Search Bar Row
         search_card = QFrame(self)
         search_card.setProperty("class", "CardWidget")
         search_layout = QHBoxLayout(search_card)
-        search_layout.setContentsMargins(10, 10, 10, 10)
+        search_layout.setContentsMargins(8, 8, 8, 8)
         search_layout.setSpacing(10)
 
         # Service Detector Badge
@@ -59,7 +69,7 @@ class SearchPage(QWidget):
 
         # Search LineEdit
         self.search_input = QLineEdit(search_card)
-        self.search_input.setPlaceholderText("Enter link or search song/album (e.g. 'Daft Punk - One More Time' or Spotify link)...")
+        self.search_input.setPlaceholderText("Paste URL or enter song name (e.g. 'Daft Punk - Instant Crush')...")
         self.search_input.textChanged.connect(self._on_query_changed)
         self.search_input.returnPressed.connect(self._start_search)
         search_layout.addWidget(self.search_input, stretch=1)
@@ -71,7 +81,7 @@ class SearchPage(QWidget):
         search_layout.addWidget(paste_btn)
 
         # Search / Fetch Button
-        self.fetch_btn = QPushButton("Search", search_card)
+        self.fetch_btn = QPushButton("Explore", search_card)
         self.fetch_btn.setProperty("class", "PrimaryButton")
         self.fetch_btn.setFixedWidth(100)
         self.fetch_btn.clicked.connect(self._start_search)
@@ -79,14 +89,19 @@ class SearchPage(QWidget):
 
         layout.addWidget(search_card)
 
-        # Results Summary & Selection Toolbar (Hidden until results are loaded)
+        # Results Summary & Selection Toolbar
         self.toolbar_frame = QFrame(self)
         toolbar_layout = QHBoxLayout(self.toolbar_frame)
         toolbar_layout.setContentsMargins(0, 0, 0, 0)
-        toolbar_layout.setSpacing(12)
+        toolbar_layout.setSpacing(10)
 
         self.summary_label = QLabel("", self.toolbar_frame)
-        self.summary_label.setStyleSheet("font-size: 14px; font-weight: 700; color: #FFFFFF;")
+        self.summary_label.setStyleSheet("""
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            color: #F5F0EC;
+        """)
         toolbar_layout.addWidget(self.summary_label, stretch=1)
 
         self.select_all_btn = QPushButton("Select All", self.toolbar_frame)
@@ -114,7 +129,7 @@ class SearchPage(QWidget):
         self.cards_container = QWidget()
         self.cards_layout = QVBoxLayout(self.cards_container)
         self.cards_layout.setContentsMargins(0, 0, 0, 0)
-        self.cards_layout.setSpacing(10)
+        self.cards_layout.setSpacing(8)
         self.cards_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         self.scroll_area.setWidget(self.cards_container)
@@ -134,22 +149,33 @@ class SearchPage(QWidget):
         empty_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         empty_layout.setSpacing(12)
 
-        icon_lbl = QLabel("🎧", empty_box)
-        icon_lbl.setStyleSheet("font-size: 40px;")
+        icon_lbl = QLabel("📼", empty_box)
+        icon_lbl.setStyleSheet("font-size: 38px;")
         icon_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         empty_layout.addWidget(icon_lbl)
 
-        title_lbl = QLabel("Multi-Platform Music Hub", empty_box)
-        title_lbl.setStyleSheet("font-size: 16px; font-weight: 700; color: #FFFFFF;")
+        title_lbl = QLabel("CassetteCat Downloader Engine", empty_box)
+        title_lbl.setStyleSheet("""
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            color: #F5F0EC;
+        """)
         title_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         empty_layout.addWidget(title_lbl)
 
         desc_lbl = QLabel(
-            "Paste URLs from Spotify, Apple Music, Deezer, YouTube, or search by song name.\n"
-            "High-resolution artwork and synced lyrics are automatically embedded.",
+            "Paste URLs from Spotify, Apple Music, Deezer, YouTube, or type track titles.\n"
+            "High-resolution album art and synchronized lyrics are embedded automatically.",
             empty_box
         )
-        desc_lbl.setStyleSheet("font-size: 12px; color: #8C8C9E; text-align: center; line-height: 1.4;")
+        desc_lbl.setStyleSheet("""
+            font-family: 'IBM Plex Sans', sans-serif;
+            font-size: 12px;
+            color: #A8A49E;
+            text-align: center;
+            line-height: 1.5;
+        """)
         desc_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         empty_layout.addWidget(desc_lbl)
 
@@ -189,7 +215,7 @@ class SearchPage(QWidget):
 
     def _on_search_completed(self, result: Dict[str, Any]):
         self.fetch_btn.setEnabled(True)
-        self.fetch_btn.setText("Search")
+        self.fetch_btn.setText("Explore")
 
         if not result.get("success"):
             QMessageBox.warning(self, "No Results", result.get("error", "Unable to resolve query."))

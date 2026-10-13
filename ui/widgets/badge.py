@@ -2,12 +2,12 @@ from PyQt6.QtWidgets import QLabel
 from PyQt6.QtCore import Qt
 
 SERVICE_COLORS = {
-    "spotify": {"bg": "rgba(29, 185, 84, 0.18)", "text": "#1DB954", "border": "#1DB954"},
-    "apple_music": {"bg": "rgba(250, 45, 72, 0.18)", "text": "#FA2D48", "border": "#FA2D48"},
-    "deezer": {"bg": "rgba(162, 56, 255, 0.18)", "text": "#A238FF", "border": "#A238FF"},
-    "youtube": {"bg": "rgba(255, 0, 0, 0.18)", "text": "#FF3333", "border": "#FF0000"},
-    "search": {"bg": "rgba(99, 102, 241, 0.18)", "text": "#818CF8", "border": "#6366F1"},
-    "empty": {"bg": "rgba(140, 140, 158, 0.15)", "text": "#8C8C9E", "border": "#4A4A58"},
+    "spotify": {"bg": "rgba(29, 185, 84, 0.12)", "text": "#1DB954", "border": "rgba(29, 185, 84, 0.35)"},
+    "apple_music": {"bg": "rgba(250, 45, 72, 0.12)", "text": "#FA2D48", "border": "rgba(250, 45, 72, 0.35)"},
+    "deezer": {"bg": "rgba(162, 56, 255, 0.12)", "text": "#A238FF", "border": "rgba(162, 56, 255, 0.35)"},
+    "youtube": {"bg": "rgba(194, 59, 48, 0.15)", "text": "#FF6B6B", "border": "rgba(194, 59, 48, 0.4)"},
+    "search": {"bg": "rgba(194, 59, 48, 0.12)", "text": "#D8584E", "border": "rgba(194, 59, 48, 0.3)"},
+    "empty": {"bg": "rgba(168, 164, 158, 0.08)", "text": "#918E88", "border": "rgba(245, 240, 236, 0.08)"},
 }
 
 SERVICE_LABELS = {
@@ -34,11 +34,12 @@ class ServiceBadge(QLabel):
                 background-color: {colors['bg']};
                 color: {colors['text']};
                 border: 1px solid {colors['border']};
-                border-radius: 6px;
-                padding: 4px 10px;
+                border-radius: 4px;
+                padding: 3px 8px;
+                font-family: "IBM Plex Mono", monospace;
                 font-size: 10px;
-                font-weight: 800;
-                letter-spacing: 0.5px;
+                font-weight: 600;
+                letter-spacing: 0.6px;
             }}
         """)
         self.setAlignment(Qt.AlignmentFlag.AlignCenter)

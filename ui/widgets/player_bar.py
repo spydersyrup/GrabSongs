@@ -5,12 +5,11 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt
 from core.audio_player import PreviewPlayer
 
-
 class PlayerBar(QFrame):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setObjectName("PlayerBar")
-        self.setFixedHeight(70)
+        self.setFixedHeight(68)
         self.player = PreviewPlayer.get_instance()
 
         self._setup_ui()
@@ -18,7 +17,7 @@ class PlayerBar(QFrame):
 
     def _setup_ui(self):
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(18, 10, 18, 10)
+        layout.setContentsMargins(20, 8, 20, 8)
         layout.setSpacing(16)
 
         # Left: Current Track Info
@@ -26,12 +25,21 @@ class PlayerBar(QFrame):
         track_info_layout.setSpacing(2)
         track_info_layout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
 
-        self.title_label = QLabel("No track loaded", self)
-        self.title_label.setStyleSheet("color: #FFFFFF; font-size: 13px; font-weight: 700;")
+        self.title_label = QLabel("No track playing", self)
+        self.title_label.setStyleSheet("""
+            color: #F5F0EC;
+            font-family: 'Space Grotesk', 'IBM Plex Sans', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+        """)
         track_info_layout.addWidget(self.title_label)
 
-        self.artist_label = QLabel("Click 'Play' on any completed track", self)
-        self.artist_label.setStyleSheet("color: #8C8C9E; font-size: 11px;")
+        self.artist_label = QLabel("CassetteCat Audio Engine", self)
+        self.artist_label.setStyleSheet("""
+            color: #A8A49E;
+            font-family: 'IBM Plex Sans', sans-serif;
+            font-size: 11px;
+        """)
         track_info_layout.addWidget(self.artist_label)
 
         layout.addLayout(track_info_layout, stretch=2)
@@ -47,18 +55,21 @@ class PlayerBar(QFrame):
         ctrl_row.setSpacing(10)
 
         self.play_btn = QPushButton("▶", self)
-        self.play_btn.setFixedSize(36, 36)
+        self.play_btn.setFixedSize(34, 34)
         self.play_btn.setStyleSheet("""
             QPushButton {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #6366F1, stop:1 #8B5CF6);
+                background-color: #C23B30;
                 color: #FFFFFF;
                 border: none;
-                border-radius: 18px;
-                font-size: 14px;
-                font-weight: 800;
+                border-radius: 17px;
+                font-size: 13px;
+                font-weight: 700;
             }
             QPushButton:hover {
-                background-color: #4F46E5;
+                background-color: #D64337;
+            }
+            QPushButton:pressed {
+                background-color: #AA332A;
             }
         """)
         self.play_btn.clicked.connect(self.player.toggle_play)
@@ -66,12 +77,16 @@ class PlayerBar(QFrame):
 
         center_layout.addLayout(ctrl_row)
 
-        # Slider & Timers row
+        # Slider & Timers row (Timers in IBM Plex Mono)
         time_row = QHBoxLayout()
         time_row.setSpacing(8)
 
         self.time_curr = QLabel("0:00", self)
-        self.time_curr.setStyleSheet("color: #717182; font-size: 11px;")
+        self.time_curr.setStyleSheet("""
+            color: #918E88;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+        """)
         time_row.addWidget(self.time_curr)
 
         self.pos_slider = QSlider(Qt.Orientation.Horizontal, self)
@@ -81,7 +96,11 @@ class PlayerBar(QFrame):
         time_row.addWidget(self.pos_slider)
 
         self.time_total = QLabel("0:00", self)
-        self.time_total.setStyleSheet("color: #717182; font-size: 11px;")
+        self.time_total.setStyleSheet("""
+            color: #918E88;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+        """)
         time_row.addWidget(self.time_total)
 
         center_layout.addLayout(time_row)
@@ -93,7 +112,7 @@ class PlayerBar(QFrame):
         vol_layout.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
 
         vol_icon = QLabel("🔊", self)
-        vol_icon.setStyleSheet("color: #8C8C9E; font-size: 12px;")
+        vol_icon.setStyleSheet("color: #918E88; font-size: 12px;")
         vol_layout.addWidget(vol_icon)
 
         self.vol_slider = QSlider(Qt.Orientation.Horizontal, self)

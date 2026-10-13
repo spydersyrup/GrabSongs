@@ -1,8 +1,10 @@
+import os
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QHBoxLayout, QVBoxLayout,
     QStackedWidget, QPushButton, QLabel, QFrame
 )
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QIcon, QPixmap
 from .pages.search_page import SearchPage
 from .pages.queue_page import QueuePage
 from .pages.library_page import LibraryPage
@@ -11,13 +13,17 @@ from .widgets.player_bar import PlayerBar
 from core.downloader.queue_manager import QueueManager
 from core.audio_player import PreviewPlayer
 
-
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Harmonix - Unified Multi-Platform Music Downloader")
+        self.setWindowTitle("CassetteCat Downloader")
         self.resize(1180, 780)
         self.setMinimumSize(940, 620)
+
+        # App Icon
+        icon_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets", "cassettecat_icon.png")
+        if os.path.exists(icon_path):
+            self.setWindowIcon(QIcon(icon_path))
 
         self.queue_manager = QueueManager(self)
         self.player = PreviewPlayer.get_instance()
@@ -39,29 +45,44 @@ class MainWindow(QMainWindow):
         content_row.setContentsMargins(0, 0, 0, 0)
         content_row.setSpacing(0)
 
-        # 1. Left Sidebar
+        # 1. Left Sidebar (surfaceSidebar #131211)
         sidebar = QFrame(self)
         sidebar.setObjectName("Sidebar")
         sidebar_layout = QVBoxLayout(sidebar)
-        sidebar_layout.setContentsMargins(16, 24, 16, 20)
-        sidebar_layout.setSpacing(12)
+        sidebar_layout.setContentsMargins(16, 24, 16, 18)
+        sidebar_layout.setSpacing(8)
 
-        # Logo and Title
-        brand_layout = QVBoxLayout()
-        brand_layout.setSpacing(2)
-        app_title = QLabel("HARMONIX", sidebar)
+        # Brand row with icon and Space Grotesk title
+        brand_row = QHBoxLayout()
+        brand_row.setSpacing(10)
+        brand_row.setAlignment(Qt.AlignmentFlag.AlignVCenter)
+
+        icon_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets", "cassettecat_icon.png")
+        if os.path.exists(icon_path):
+            icon_label = QLabel(sidebar)
+            icon_label.setFixedSize(28, 28)
+            pix = QPixmap(icon_path).scaled(28, 28, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+            icon_label.setPixmap(pix)
+            brand_row.addWidget(icon_label)
+
+        brand_text_layout = QVBoxLayout()
+        brand_text_layout.setSpacing(1)
+
+        app_title = QLabel("CASSETTECAT", sidebar)
         app_title.setObjectName("AppTitle")
-        brand_layout.addWidget(app_title)
+        brand_text_layout.addWidget(app_title)
 
-        app_sub = QLabel("Universal Music Downloader", sidebar)
+        app_sub = QLabel("MUSIC DOWNLOADER", sidebar)
         app_sub.setObjectName("AppSubtitle")
-        brand_layout.addWidget(app_sub)
-        sidebar_layout.addLayout(brand_layout)
+        brand_text_layout.addWidget(app_sub)
 
-        sidebar_layout.addSpacing(16)
+        brand_row.addLayout(brand_text_layout)
+        sidebar_layout.addLayout(brand_row)
 
-        # Nav Buttons
-        self.btn_search = QPushButton("🔍  Explore & Search", sidebar)
+        sidebar_layout.addSpacing(18)
+
+        # Navigation Items (NavItem.qml style)
+        self.btn_search = QPushButton("🔍  Explore", sidebar)
         self.btn_search.setProperty("class", "NavButton")
         self.btn_search.setCheckable(True)
         self.btn_search.setChecked(True)
@@ -74,7 +95,7 @@ class MainWindow(QMainWindow):
         self.btn_queue.clicked.connect(lambda: self._set_page(1))
         sidebar_layout.addWidget(self.btn_queue)
 
-        self.btn_library = QPushButton("🎵  Library", sidebar)
+        self.btn_library = QPushButton("📼  Library", sidebar)
         self.btn_library.setProperty("class", "NavButton")
         self.btn_library.setCheckable(True)
         self.btn_library.clicked.connect(lambda: self._set_page(2))
@@ -88,9 +109,13 @@ class MainWindow(QMainWindow):
 
         sidebar_layout.addStretch(1)
 
-        # Footer info
-        version_lbl = QLabel("v1.0.0 • Freyr + Apmyx Core", sidebar)
-        version_lbl.setStyleSheet("color: #555566; font-size: 11px;")
+        # Footer version label (IBM Plex Mono)
+        version_lbl = QLabel("v1.2.0 • CassetteCat System", sidebar)
+        version_lbl.setStyleSheet("""
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px;
+            color: #918E88;
+        """)
         sidebar_layout.addWidget(version_lbl)
 
         content_row.addWidget(sidebar)
@@ -111,7 +136,7 @@ class MainWindow(QMainWindow):
         content_row.addWidget(self.stack, stretch=1)
         main_vbox.addLayout(content_row, stretch=1)
 
-        # 3. Bottom Audio Player Bar
+        # 3. Bottom Player Dock (surfaceDock #151412)
         self.player_bar = PlayerBar(self)
         main_vbox.addWidget(self.player_bar)
 
@@ -145,7 +170,6 @@ class MainWindow(QMainWindow):
 
     def _on_download_requested(self, tracks: list):
         self.queue_manager.add_tracks(tracks)
-        # Update queue button label and switch to queue view
         self._update_queue_label()
         self._set_page(1)
 

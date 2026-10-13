@@ -33,7 +33,7 @@ class TrackCard(QFrame):
         super().__init__(parent)
         self.meta = dict(meta)
         self.setProperty("class", "CardWidget")
-        self.setFixedHeight(72)
+        self.setFixedHeight(68)
 
         self._setup_ui()
         self._load_cover()
@@ -51,33 +51,47 @@ class TrackCard(QFrame):
 
         # Cover Thumbnail
         self.cover_label = QLabel(self)
-        self.cover_label.setFixedSize(54, 54)
-        self.cover_label.setStyleSheet("background-color: #252532; border-radius: 8px;")
+        self.cover_label.setFixedSize(50, 50)
+        self.cover_label.setStyleSheet("background-color: #22201D; border-radius: 8px;")
         self.cover_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(self.cover_label)
 
         # Track Info (Title, Artist, Album)
         info_layout = QVBoxLayout()
-        info_layout.setSpacing(3)
+        info_layout.setSpacing(2)
         info_layout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
 
         self.title_label = QLabel(self.meta.get("title", "Unknown Title"), self)
-        self.title_label.setStyleSheet("color: #FFFFFF; font-size: 13px; font-weight: 700;")
+        self.title_label.setStyleSheet("""
+            color: #F5F0EC;
+            font-family: 'Space Grotesk', 'IBM Plex Sans', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+        """)
         info_layout.addWidget(self.title_label)
 
         details_text = f"{self.meta.get('artist', 'Unknown Artist')} • {self.meta.get('album', '')}"
         self.details_label = QLabel(details_text, self)
-        self.details_label.setStyleSheet("color: #8C8C9E; font-size: 11px;")
+        self.details_label.setStyleSheet("""
+            color: #A8A49E;
+            font-family: 'IBM Plex Sans', sans-serif;
+            font-size: 11px;
+        """)
         info_layout.addWidget(self.details_label)
 
         layout.addLayout(info_layout, stretch=1)
 
-        # Duration
+        # Duration in IBM Plex Mono
         dur_sec = self.meta.get("duration", 0)
         dur_str = f"{int(dur_sec // 60)}:{int(dur_sec % 60):02d}" if dur_sec > 0 else ""
         if dur_str:
             self.dur_label = QLabel(dur_str, self)
-            self.dur_label.setStyleSheet("color: #717182; font-size: 12px; font-weight: 500;")
+            self.dur_label.setStyleSheet("""
+                color: #918E88;
+                font-family: 'IBM Plex Mono', monospace;
+                font-size: 11px;
+                font-weight: 500;
+            """)
             layout.addWidget(self.dur_label)
 
         # Service Badge
@@ -88,7 +102,7 @@ class TrackCard(QFrame):
         # Download Button
         self.dl_btn = QPushButton("Download", self)
         self.dl_btn.setProperty("class", "PrimaryButton")
-        self.dl_btn.setFixedSize(92, 34)
+        self.dl_btn.setFixedSize(92, 32)
         self.dl_btn.clicked.connect(lambda: self.download_requested.emit(self.meta))
         layout.addWidget(self.dl_btn)
 
@@ -106,7 +120,7 @@ class TrackCard(QFrame):
         img = QImage.fromData(img_bytes)
         if not img.isNull():
             pix = QPixmap.fromImage(img).scaled(
-                54, 54,
+                50, 50,
                 Qt.AspectRatioMode.KeepAspectRatioByExpanding,
                 Qt.TransformationMode.SmoothTransformation
             )

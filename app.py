@@ -19,28 +19,46 @@ if sys.platform == "win32":
         pass
 
 from PyQt6.QtWidgets import QApplication
+from PyQt6.QtGui import QFontDatabase, QFont, QIcon
 from PyQt6.QtCore import Qt
 from ui.main_window import MainWindow
-from ui.styles import THEME_DARK
+from ui.styles import THEME_CASSETTECAT
+
+def load_fonts():
+    fonts_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "fonts")
+    if os.path.exists(fonts_dir):
+        for font_file in os.listdir(fonts_dir):
+            if font_file.endswith(".ttf") or font_file.endswith(".otf"):
+                full_path = os.path.join(fonts_dir, font_file)
+                QFontDatabase.addApplicationFont(full_path)
 
 def main():
-    # Enable High DPI scaling
-
     app = QApplication(sys.argv)
-    app.setApplicationName("Harmonix")
-    app.setOrganizationName("HarmonixMusic")
+    app.setApplicationName("CassetteCat Downloader")
+    app.setOrganizationName("CassetteCat")
 
-    # Apply modern dark styling
-    app.setStyleSheet(THEME_DARK)
+    # Set Window Icon
+    icon_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "cassettecat_icon.png")
+    if os.path.exists(icon_path):
+        app.setWindowIcon(QIcon(icon_path))
+
+    # Load CassetteCat typography (Space Grotesk, IBM Plex Sans, IBM Plex Mono)
+    load_fonts()
+
+    # Set IBM Plex Sans as the default body font
+    default_font = QFont("IBM Plex Sans", 10)
+    app.setFont(default_font)
+
+    # Apply CassetteCat Visual System Stylesheet
+    app.setStyleSheet(THEME_CASSETTECAT)
 
     window = MainWindow()
     window.show()
     window.raise_()
     window.activateWindow()
 
-    print("Harmonix GUI initialized and running.")
+    print("CassetteCat Downloader initialized and running.", flush=True)
     sys.exit(app.exec())
-
 
 if __name__ == "__main__":
     main()

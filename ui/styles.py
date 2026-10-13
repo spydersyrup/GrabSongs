@@ -1,158 +1,197 @@
-THEME_DARK = """
-/* Harmonix Dark Theme */
+# CassetteCat Design System Stylesheet
+# Colors and typography strictly derived from C:\Users\ladsa\Desktop\CassetteCat_Desktop\DESIGN.md
+
+THEME_CASSETTECAT = """
+/* =========================================================================
+   CassetteCat Visual Design System
+   Base Surface: #0E0D0C
+   Brand Accent: Record Red (#C23B30, Hover: #D64337, Active: #AA332A)
+   Typography: Space Grotesk (Headings), IBM Plex Sans (Body), IBM Plex Mono (Labels)
+========================================================================= */
 
 QMainWindow, QWidget#CentralWidget {
-    background-color: #111115;
-    color: #F0F0F5;
-    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+    background-color: #0E0D0C; /* surfaceBase */
+    color: #F5F0EC;            /* textPrimary */
+    font-family: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 13px;
 }
 
 /* Sidebar */
 QFrame#Sidebar {
-    background-color: #16161C;
-    border-right: 1px solid #23232C;
-    min-width: 210px;
-    max-width: 210px;
+    background-color: #131211; /* surfaceSidebar */
+    border-right: 1px solid rgba(245, 240, 236, 0.05); /* borderSubtle */
+    min-width: 220px;
+    max-width: 220px;
 }
 
 QLabel#AppTitle {
-    font-size: 20px;
-    font-weight: 800;
-    color: #FFFFFF;
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #F5F0EC; /* textPrimary */
     letter-spacing: 0.5px;
 }
 
 QLabel#AppSubtitle {
+    font-family: "IBM Plex Mono", monospace;
     font-size: 11px;
-    color: #8C8C9E;
+    color: #A8A49E; /* textSecondary */
     font-weight: 500;
+    letter-spacing: 0.3px;
 }
 
-/* Navigation Buttons */
+/* Nav Item Button (Matches NavItem.qml) */
 QPushButton.NavButton {
     background-color: transparent;
-    color: #9C9CAE;
+    color: #A8A49E; /* textSecondary */
     border: none;
     border-radius: 8px;
     padding: 10px 14px;
     text-align: left;
+    font-family: "IBM Plex Sans", sans-serif;
     font-size: 13px;
-    font-weight: 600;
+    font-weight: 500;
 }
 
 QPushButton.NavButton:hover {
-    background-color: #21212B;
-    color: #FFFFFF;
+    background-color: #22201D; /* surfaceCardHover */
+    color: #F5F0EC;            /* textPrimary */
 }
 
 QPushButton.NavButton:checked {
-    background-color: #2A2A38;
-    color: #FFFFFF;
-    font-weight: 700;
-    border-left: 3px solid #6366F1;
+    background-color: #282623; /* surfaceElevated */
+    color: #F5F0EC;            /* textPrimary */
+    font-weight: 600;
+    border-left: 3px solid #C23B30; /* recordRed */
+    padding-left: 11px;
 }
 
-/* Search Bar & Inputs */
+/* Input Fields (Matches surfaceInput) */
 QLineEdit {
-    background-color: #1C1C24;
-    border: 1px solid #2E2E3C;
-    border-radius: 10px;
+    background-color: #1A1917; /* surfaceInput */
+    border: 1px solid rgba(245, 240, 236, 0.08); /* borderVariant */
+    border-radius: 8px;
     padding: 10px 14px;
-    color: #FFFFFF;
+    color: #F5F0EC; /* textPrimary */
+    font-family: "IBM Plex Sans", sans-serif;
     font-size: 13px;
-    selection-background-color: #6366F1;
+    selection-background-color: #C23B30;
 }
 
 QLineEdit:focus {
-    border: 1px solid #6366F1;
-    background-color: #22222D;
+    border: 1px solid #C23B30; /* recordRed focus */
+    background-color: #1F1E1B;
+}
+
+QLineEdit::placeholder {
+    color: #918E88; /* silverDim */
 }
 
 /* Action Buttons */
 QPushButton.PrimaryButton {
-    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #6366F1, stop:1 #8B5CF6);
+    background-color: #C23B30; /* recordRed */
     color: #FFFFFF;
     border: none;
-    border-radius: 10px;
-    padding: 10px 18px;
-    font-size: 13px;
-    font-weight: 700;
-}
-
-QPushButton.PrimaryButton:hover {
-    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #4F46E5, stop:1 #7C3AED);
-}
-
-QPushButton.PrimaryButton:pressed {
-    background-color: #4338CA;
-}
-
-QPushButton.SecondaryButton {
-    background-color: #242430;
-    color: #E2E2EC;
-    border: 1px solid #323242;
-    border-radius: 10px;
-    padding: 9px 15px;
+    border-radius: 8px;
+    padding: 9px 18px;
+    font-family: "IBM Plex Sans", sans-serif;
     font-size: 13px;
     font-weight: 600;
 }
 
+QPushButton.PrimaryButton:hover {
+    background-color: #D64337; /* recordRedHover */
+}
+
+QPushButton.PrimaryButton:pressed {
+    background-color: #AA332A;
+}
+
+QPushButton.PrimaryButton:disabled {
+    background-color: #282623;
+    color: #918E88;
+}
+
+QPushButton.SecondaryButton {
+    background-color: #282623; /* surfaceElevated */
+    color: #F5F0EC;            /* textPrimary */
+    border: 1px solid rgba(245, 240, 236, 0.08);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-family: "IBM Plex Sans", sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+}
+
 QPushButton.SecondaryButton:hover {
-    background-color: #2E2E3E;
-    border-color: #424256;
+    background-color: #22201D; /* surfaceCardHover */
+    border-color: rgba(245, 240, 236, 0.15);
+}
+
+QPushButton.SecondaryButton:pressed {
+    background-color: #181715;
 }
 
 QPushButton.DangerButton {
-    background-color: rgba(239, 68, 68, 0.15);
-    color: #F87171;
-    border: 1px solid rgba(239, 68, 68, 0.3);
-    border-radius: 10px;
-    padding: 9px 15px;
+    background-color: rgba(255, 107, 107, 0.12); /* danger tint */
+    color: #FF6B6B;                              /* danger */
+    border: 1px solid rgba(255, 107, 107, 0.25);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-family: "IBM Plex Sans", sans-serif;
     font-size: 13px;
     font-weight: 600;
 }
 
 QPushButton.DangerButton:hover {
-    background-color: rgba(239, 68, 68, 0.25);
-    border-color: #EF4444;
+    background-color: rgba(255, 107, 107, 0.22);
+    border-color: #FF6B6B;
 }
 
-/* Card Containers */
+/* Cards & Containers (Matches surfaceCard) */
 QFrame.CardWidget {
-    background-color: #191922;
-    border: 1px solid #262633;
-    border-radius: 12px;
+    background-color: #181715; /* surfaceCard */
+    border: 1px solid rgba(245, 240, 236, 0.06); /* borderCard */
+    border-radius: 10px;
 }
 
 QFrame.CardWidget:hover {
-    border-color: #38384A;
-    background-color: #1D1D28;
+    background-color: #22201D; /* surfaceCardHover */
+    border-color: rgba(245, 240, 236, 0.12);
 }
 
-/* Badges */
-QLabel.Badge {
-    border-radius: 6px;
-    padding: 3px 8px;
-    font-size: 11px;
+/* Headings */
+QLabel.Heading1 {
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 22px;
     font-weight: 700;
+    color: #F5F0EC;
+    letter-spacing: -0.2px;
+}
+
+QLabel.Heading2 {
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: #F5F0EC;
 }
 
 /* Progress Bars */
 QProgressBar {
-    background-color: #242432;
+    background-color: #22201D; /* surfaceCardHover */
     border: none;
-    border-radius: 4px;
-    height: 8px;
+    border-radius: 3px;
+    height: 6px;
     text-align: center;
     color: transparent;
 }
 
 QProgressBar::chunk {
-    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #6366F1, stop:1 #EC4899);
-    border-radius: 4px;
+    background-color: #C23B30; /* recordRed */
+    border-radius: 3px;
 }
 
-/* Scroll Area & Bars */
+/* Scroll Area & Minimalist Warm Dark Bars */
 QScrollArea {
     border: none;
     background-color: transparent;
@@ -160,20 +199,20 @@ QScrollArea {
 
 QScrollBar:vertical {
     border: none;
-    background: #141419;
-    width: 8px;
+    background: #0E0D0C; /* surfaceBase */
+    width: 6px;
     margin: 0px;
-    border-radius: 4px;
+    border-radius: 3px;
 }
 
 QScrollBar::handle:vertical {
-    background: #2E2E3C;
-    min-height: 25px;
-    border-radius: 4px;
+    background: #282623; /* surfaceElevated */
+    min-height: 20px;
+    border-radius: 3px;
 }
 
 QScrollBar::handle:vertical:hover {
-    background: #4A4A5E;
+    background: #383530;
 }
 
 QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
@@ -182,16 +221,17 @@ QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
 
 /* ComboBox & SpinBox */
 QComboBox, QSpinBox {
-    background-color: #1C1C24;
-    border: 1px solid #2E2E3C;
+    background-color: #1A1917; /* surfaceInput */
+    border: 1px solid rgba(245, 240, 236, 0.08);
     border-radius: 8px;
     padding: 6px 12px;
-    color: #FFFFFF;
+    color: #F5F0EC; /* textPrimary */
+    font-family: "IBM Plex Sans", sans-serif;
     font-size: 13px;
 }
 
 QComboBox:focus, QSpinBox:focus {
-    border-color: #6366F1;
+    border-color: #C23B30;
 }
 
 QComboBox::drop-down {
@@ -200,61 +240,63 @@ QComboBox::drop-down {
 }
 
 QComboBox QAbstractItemView {
-    background-color: #1E1E28;
-    color: #FFFFFF;
-    border: 1px solid #2E2E3C;
-    selection-background-color: #6366F1;
+    background-color: #282623; /* surfaceElevated */
+    color: #F5F0EC;
+    border: 1px solid rgba(245, 240, 236, 0.1);
+    selection-background-color: #C23B30;
     border-radius: 6px;
 }
 
 /* Sliders */
 QSlider::groove:horizontal {
-    height: 5px;
-    background: #262635;
+    height: 4px;
+    background: #22201D; /* surfaceCardHover */
     border-radius: 2px;
 }
 
 QSlider::sub-page:horizontal {
-    background: #6366F1;
+    background: #C23B30; /* recordRed */
     border-radius: 2px;
 }
 
 QSlider::handle:horizontal {
-    background: #FFFFFF;
-    width: 14px;
-    height: 14px;
-    margin: -5px 0;
-    border-radius: 7px;
+    background: #F5F0EC; /* textPrimary */
+    width: 12px;
+    height: 12px;
+    margin: -4px 0;
+    border-radius: 6px;
 }
 
 QSlider::handle:horizontal:hover {
-    background: #818CF8;
+    background: #FFFFFF;
+    transform: scale(1.15);
 }
 
-/* Bottom Player Bar */
+/* Player Dock / Bottom Bar (Matches surfaceDock) */
 QFrame#PlayerBar {
-    background-color: #15151B;
-    border-top: 1px solid #22222C;
+    background-color: #151412; /* surfaceDock */
+    border-top: 1px solid rgba(245, 240, 236, 0.05); /* borderSubtle */
 }
 
-/* Checkbox */
+/* Checkboxes */
 QCheckBox {
     spacing: 8px;
-    color: #D1D1E0;
+    color: #F5F0EC;
+    font-family: "IBM Plex Sans", sans-serif;
     font-size: 13px;
 }
 
 QCheckBox::indicator {
-    width: 18px;
-    height: 18px;
-    border-radius: 5px;
-    border: 1px solid #3E3E50;
-    background-color: #1C1C26;
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    border: 1px solid rgba(245, 240, 236, 0.2);
+    background-color: #1A1917;
 }
 
 QCheckBox::indicator:checked {
-    background-color: #6366F1;
-    border-color: #6366F1;
+    background-color: #C23B30;
+    border-color: #C23B30;
     image: none;
 }
 """
