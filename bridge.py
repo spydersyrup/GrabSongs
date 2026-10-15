@@ -443,19 +443,6 @@ class DownloaderBridge(QObject):
         return items
 
     @pyqtSlot(str)
-    def openFile(self, path: str):
-        if not os.path.exists(path):
-            return
-        if sys.platform == "win32":
-            os.startfile(path)
-        elif sys.platform == "darwin":
-            import subprocess
-            subprocess.run(["open", path])
-        else:
-            import subprocess
-            subprocess.run(["xdg-open", path])
-
-    @pyqtSlot(str)
     def revealFileInExplorer(self, path: str):
         if not os.path.exists(path):
             return
@@ -607,10 +594,6 @@ class DownloaderBridge(QObject):
             self._player.stop()
             self._preview_playing = False
             self.previewStateChanged.emit()
-
-    @pyqtSlot(str)
-    def cancelJob(self, job_id: str):
-        self.queue_manager.cancel_job(job_id)
 
     @pyqtSlot()
     def cancelAll(self):

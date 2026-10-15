@@ -6,11 +6,9 @@ from core.downloader.worker import DownloadWorker
 from core.config import AppConfig
 
 class QueueManager(QObject):
-    job_added = pyqtSignal(str, dict)                     # job_id, meta
     job_progress = pyqtSignal(str, float, str, str, str)  # job_id, percent, speed, eta, status
     job_finished = pyqtSignal(str, str, dict)             # job_id, file_path, meta
     job_error = pyqtSignal(str, str)                      # job_id, error_msg
-    all_completed = pyqtSignal()
 
     _instance = None
 
@@ -32,10 +30,6 @@ class QueueManager(QObject):
     def subscribe(self, callback: Callable[[str, Dict[str, Any]], None]):
         if callback not in self._subscribers:
             self._subscribers.append(callback)
-
-    def unsubscribe(self, callback: Callable[[str, Dict[str, Any]], None]):
-        if callback in self._subscribers:
-            self._subscribers.remove(callback)
 
     def _notify(self, event_type: str, data: Dict[str, Any]):
         for sub in list(self._subscribers):
@@ -62,7 +56,6 @@ class QueueManager(QObject):
             self.job_store[job_id] = job_data
             self.queue.append(job_data)
             added_ids.append(job_id)
-            self.job_added.emit(job_id, track)
             self._notify("job_added", {"job_id": job_id, "metadata": track})
 
         self._process_queue()
@@ -97,15 +90,6 @@ class QueueManager(QObject):
             job["status"] = "Cancelled"
         self._notify("job_cancelled", {"job_id": job_id})
 
-    def get_all_jobs(self) -> Dict[str, Dict[str, Any]]:
-        return dict(self.job_store)
-
-    def get_active_jobs(self) -> List[Dict[str, Any]]:
-        return [
-            j for j in self.job_store.values()
-            if j.get("status") in ("Queued", "Downloading", "Converting", "Tagging")
-        ]
-
     def _process_queue(self):
         max_concurrent = int(self.config.get("max_concurrent_downloads", 2))
 
@@ -126,9 +110,6 @@ class QueueManager(QObject):
 
             self.active_workers[job_id] = worker
             worker.start()
-
-        if not self.active_workers and not self.queue:
-            self.all_completed.emit()
 
     def _on_worker_progress(self, job_id: str, percent: float, speed: str, eta: str, status: str):
         job = self.job_store.get(job_id)
