@@ -1,9 +1,13 @@
 import os
+import json
 import uuid
 from typing import Dict, Any, List, Callable, Optional
 from PyQt6.QtCore import QObject, pyqtSignal
 from core.downloader.worker import DownloadWorker
 from core.config import AppConfig
+
+QUEUE_FILE = os.path.join(os.path.expanduser("~"), ".grabsongs", "queue.json")
+TERMINAL = ("Completed", "Failed", "Cancelled")
 
 class QueueManager(QObject):
     job_progress = pyqtSignal(str, float, str, str, str)  # job_id, percent, speed, eta, status
@@ -18,7 +22,7 @@ class QueueManager(QObject):
             cls._instance = QueueManager(parent)
         return cls._instance
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, restore=True):
         super().__init__(parent)
         self.config = AppConfig.get_instance()
         self.queue: List[Dict[str, Any]] = []
@@ -26,6 +30,40 @@ class QueueManager(QObject):
         self.completed_jobs: List[Dict[str, Any]] = []
         self.job_store: Dict[str, Dict[str, Any]] = {}
         self._subscribers: List[Callable[[str, Dict[str, Any]], None]] = []
+        if restore:
+            self.restore()
+
+    def restore(self) -> int:
+        """Re-queue whatever was still outstanding when the app last closed."""
+        try:
+            with open(QUEUE_FILE, "r", encoding="utf-8") as f:
+                tracks = json.load(f)
+        except FileNotFoundError:
+            return 0
+        except Exception as e:
+            print(f"[Queue] Could not read {QUEUE_FILE}: {e}")
+            return 0
+        if not isinstance(tracks, list):
+            return 0
+        usable = [t for t in tracks if isinstance(t, dict) and t.get("title")]
+        if not usable:
+            return 0
+        print(f"[Queue] Restored {len(usable)} unfinished download(s)")
+        self.add_tracks(usable)
+        return len(usable)
+
+    def _persist(self):
+        """Keep the on-disk copy equal to what would still be pending if the
+        app closed right now. An interrupted download is still in job_store as
+        non-terminal, so it comes back on the next launch."""
+        pending = [j["meta"] for j in self.job_store.values()
+                   if j.get("status") not in TERMINAL]
+        try:
+            os.makedirs(os.path.dirname(QUEUE_FILE), exist_ok=True)
+            with open(QUEUE_FILE, "w", encoding="utf-8") as f:
+                json.dump(pending, f)
+        except Exception as e:
+            print(f"[Queue] Could not write {QUEUE_FILE}: {e}")
 
     def subscribe(self, callback: Callable[[str, Dict[str, Any]], None]):
         if callback not in self._subscribers:
@@ -58,6 +96,7 @@ class QueueManager(QObject):
             added_ids.append(job_id)
             self._notify("job_added", {"job_id": job_id, "metadata": track})
 
+        self._persist()
         self._process_queue()
         return added_ids
 
@@ -89,6 +128,7 @@ class QueueManager(QObject):
             job["cancelled"] = True
             job["status"] = "Cancelled"
         self._notify("job_cancelled", {"job_id": job_id})
+        self._persist()
 
     def _process_queue(self):
         max_concurrent = int(self.config.get("max_concurrent_downloads", 2))
@@ -138,6 +178,7 @@ class QueueManager(QObject):
             self.job_store[job_id]["percent"] = 100.0
             self.job_store[job_id]["file_path"] = file_path
             self.completed_jobs.append(self.job_store[job_id])
+        self._persist()
         self.job_finished.emit(job_id, file_path, meta)
         self._notify("job_completed", {
             "job_id": job_id,
@@ -160,4 +201,5 @@ class QueueManager(QObject):
                 "error": error_msg,
                 "status": "failed"
             })
+        self._persist()
         self._process_queue()

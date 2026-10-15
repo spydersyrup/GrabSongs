@@ -15,7 +15,7 @@ Read the actual current file before editing it, never rely on assumptions or a p
 Search for an existing helper, bridge slot, or component before writing a new one. This codebase already has established patterns, reuse them:
 - One class per metadata provider in `core/metadata/`, returning plain dicts, never raising for an expected failure.
 - One `@pyqtProperty` / `@pyqtSlot` on `DownloaderBridge` for everything QML can reach; never a second bridge.
-- Cooperative cancellation in `DownloadWorker` — set the flag, never `QThread.terminate()`.
+- Cooperative cancellation in `DownloadWorker`, set the flag, never `QThread.terminate()`.
 - Reuse the QML components in `qml/` (`LucideIcon`, `PressDepthIconButton`, `TransportButton`, `FilterChip`, `SettingRow`, …) instead of writing near-copies.
 
 Full component/architecture inventory: `DESIGN_SYSTEM.md` (UI) and `CODE_PATTERNS.md` (architecture) at the repo root.
@@ -24,9 +24,9 @@ Full component/architecture inventory: `DESIGN_SYSTEM.md` (UI) and `CODE_PATTERN
 
 Tunable thresholds and constants go in `DEFAULT_CONFIG` (`core/config.py`) or a named property on the window root, never as bare literals scattered through logic.
 
-## Near-zero comments — this is the rule Gemini keeps breaking, read it twice
+## Near-zero comments, this is the rule Gemini keeps breaking, read it twice
 
-Write code the way a 25-year-experienced developer would: names carry the meaning, comments are the exception not the default. No section-header comments, no restating what the code does, no comments on empty override bodies, no comment referencing "the fix" or "this task." A comment only survives if it explains a genuinely non-obvious constraint a future reader could not infer from the code itself, and even then keep it to one line. Use code only if necessary — don't add a helper, wrapper, or abstraction the task doesn't actually require.
+Write code the way a 25-year-experienced developer would: names carry the meaning, comments are the exception not the default. No section-header comments, no restating what the code does, no comments on empty override bodies, no comment referencing "the fix" or "this task." A comment only survives if it explains a genuinely non-obvious constraint a future reader could not infer from the code itself, and even then keep it to one line. Use code only if necessary, don't add a helper, wrapper, or abstraction the task doesn't actually require.
 
 ## Theming is routed, never hardcoded
 
@@ -34,7 +34,7 @@ Every color and font goes through a property on the window root in `qml/GrabSong
 
 ## Dependencies
 
-Fonts and icons are bundled offline; nothing is fetched at runtime. Verify any new dependency against `requirements.txt` and its license before adding it — `AGENTS.md` §25 and §75 both apply.
+Fonts and icons are bundled offline; nothing is fetched at runtime. Verify any new dependency against `requirements.txt` and its license before adding it, `AGENTS.md` §25 and §75 both apply.
 
 ## Scope discipline
 

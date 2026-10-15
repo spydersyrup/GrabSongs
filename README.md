@@ -1,4 +1,4 @@
-# GrabSongs — Multi-Platform Music Downloader
+# GrabSongs Multi-Platform Music Downloader
 
 **GrabSongs** is a standalone, high-performance desktop music downloader. It combines multi-platform metadata scrapers and audio stream extractors into a seamless experience with zero credentials or accounts required.
 
@@ -44,8 +44,8 @@ python app.py
 python -m unittest discover -s tests -t .
 ```
 
-Standard library only, no test runner to install. The suite is offline — it stubs the network and
-the audio pipeline — so it is safe to run without network access.
+Standard library only, no test runner to install. The suite is offline, it stubs the network and
+the audio pipeline, so it is safe to run without network access.
 
 Two scripts under `scripts/` check the live services instead. They download real audio and assert
 nothing, so they are not part of the suite; they exist because Spotify is scraped rather than called,
@@ -111,5 +111,5 @@ lawful, and it does not grant rights to the music.
 
 If you only want to download music you own or that is openly licensed, that is the
 straightforward case. If you want to distribute this tool to others, understand your
-position first — an open licence on the code does not neutralise the terms of the services
+position first, an open licence on the code does not neutralise the terms of the services
 it talks to.

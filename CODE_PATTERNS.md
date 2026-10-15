@@ -1,4 +1,4 @@
-# GrabSongs — Code Patterns
+# GrabSongs Code Patterns
 
 As-built architecture and code conventions, with file references. `CLAUDE.md` sets the general
 engineering rules (DRY, KISS, minimal changes); this catalogs how those rules are actually applied
@@ -34,11 +34,11 @@ directly.
 One class per provider in `core/metadata/` (`spotify.py`, `apple_music.py`, `deezer.py`,
 `youtube.py`, `generic.py`, `lyrics.py`), each exposing `@classmethod`/`@staticmethod` methods that
 return `Optional[Dict[str, Any]]` or `List[Dict[str, Any]]`. They never raise for an expected
-failure — a provider that can't resolve returns `None` or `[]`.
+failure, a provider that can't resolve returns `None` or `[]`.
 
 `MetadataResolver.resolve(query, target_service)` (`core/metadata/__init__.py`) is the only entry
 point: detect the provider with `ServiceDetector`, dispatch, and fall back to a cross-provider text
-search. Its return shape is always `{"success": bool, ...}` with `error` set on failure — every
+search. Its return shape is always `{"success": bool, ...}` with `error` set on failure, every
 caller checks `success` before reading `tracks`.
 
 Normalised track dicts are plain dicts, not dataclasses: `title`, `artist`, `album`, `service`,
@@ -58,7 +58,7 @@ providers; the resolver does not reconcile it. Consumers use `.get()` with defau
 
 **Cancellation is cooperative and must stay that way.** `QueueManager.cancel_job()` sets a flag;
 the worker observes it at its next check and unwinds, reporting through `error_signal`. Never call
-`QThread.terminate()` — it kills the thread mid-write and orphans the ffmpeg child process.
+`QThread.terminate()`, it kills the thread mid-write and orphans the ffmpeg child process.
 
 The worker has exactly two cancellation points, because yt-dlp gives no other hook:
 
@@ -70,11 +70,18 @@ with no check is a phase that cannot be cancelled.
 
 `_process_queue()` is the single place that starts workers and the single place that advances the
 queue; every terminal path (`_on_worker_finished`, `_on_worker_error`) ends by calling it. Cancelled
-jobs keep their slot until the worker unwinds — releasing it early would start a replacement while
+jobs keep their slot until the worker unwinds, releasing it early would start a replacement while
 the old job is still writing.
 
+The queue is written to `~/.grabsongs/queue.json` so an unfinished batch survives a restart.
+`_persist()` rewrites that file from `job_store` on every add, cancel, finish and failure, keeping
+it equal to whatever would still be pending if the app closed right now. An interrupted download is
+non-terminal, so it comes back on the next launch and is retried from the start. `restore()` runs
+from `QueueManager.__init__` and ignores a missing, corrupt or wrong-shaped file rather than
+blocking startup.
+
 **Thread affinity:** `QueueManager` and `bridge.py` live on the GUI thread, and PyQt queues worker
-signals to it, so all `job_store` mutation happens on one thread. Keep it that way — a slot that
+signals to it, so all `job_store` mutation happens on one thread. Keep it that way: a slot that
 mutates `job_store` must not run on the worker thread.
 
 ---
@@ -82,7 +89,7 @@ mutates `job_store` must not run on the worker thread.
 ## 4. Config
 
 `AppConfig.get_instance()` is a class-level singleton. Read with `.get(key, default)`, write with
-`.set(key, value)` — `set` persists the whole file immediately, so don't call it in a loop.
+`.set(key, value)`, `set` persists the whole file immediately, so don't call it in a loop.
 
 Defaults live in `DEFAULT_CONFIG` (`core/config.py`). Add new settings there, not at the call site;
 several call sites already repeat the same fallback literal.
@@ -93,7 +100,7 @@ The config file is `config.json` next to the repo root, and it is gitignored.
 
 ## 5. Error Handling
 
-The established idiom is `except Exception` with a `print()` to stdout — around 20 `print()` calls
+The established idiom is `except Exception` with a `print()` to stdout, around 20 `print()` calls
 and 14 bare excepts across `core/` and `bridge.py`. Match it for consistency when adding code near
 existing handlers.
 
@@ -142,7 +149,7 @@ palette. The palette lives in `GrabSongsMain.qml`.
   `snake_case` in Python. Both conventions coexist deliberately by language.
 - QML properties are `camelCase` (`surfaceCardHover`, `accentButtonText`).
 - Theme properties are the domain vocabulary of this UI (`surfaceBase`, `surfaceCard`, `recordRed`).
-  `recordRed` is a historical name that no longer matches the terracotta default — renaming it is
+  `recordRed` is a historical name that no longer matches the terracotta default, renaming it is
   cosmetic and would touch every component, so leave it unless doing a deliberate sweep.
 
 ---
@@ -165,13 +172,12 @@ obvious alternative is wrong.
   two queues with separate `job_store`s.
 - **`core/downloader/` has no `__init__.py`** while `core/metadata/` does. Imports work because the
   project runs from the repo root, not because the package is declared.
-- **`getDownloadedFiles()` still runs on the GUI thread.** It is cheap now — `read_tags()` memoises on
-  `(mtime, size)` and the 1s poll no longer calls it — but it is still a full `os.walk` plus a `stat`
+- **`getDownloadedFiles()` still runs on the GUI thread.** It is cheap now, `read_tags()` memoises on
+  `(mtime, size)` and the 1s poll no longer calls it, but it is still a full `os.walk` plus a `stat`
   per file. A library index would remove the walk entirely; until then, do not add per-file work to it.
 - **Spotify metadata is scraped** from `__NEXT_DATA__` in the embed page. Apple and Deezer use their
   public APIs. A failed scrape now returns an error naming the provider instead of searching for the
-  URL text, so the failure is visible — but the scrape itself is still unmaintained.
-- **The download queue is in-memory only.** Closing the app mid-batch discards every job.
+  URL text, so the failure is visible, but the scrape itself is still unmaintained.
 
 ---
 
@@ -184,7 +190,7 @@ python -m unittest discover -s tests -t .
 ```
 
 pytest happens to be present in some virtualenvs but is not a declared dependency, so nothing may
-rely on it. Tests stub `yt_dlp` and the metadata providers rather than hitting the network — see
+rely on it. Tests stub `yt_dlp` and the metadata providers rather than hitting the network, see
 `scripts/` for the live checks, which are deliberately outside the suite.
 
 A fix for a real defect should arrive with the test that would have caught it. That covers the

@@ -1179,7 +1179,7 @@ ApplicationWindow {
                                                 Label {
                                                     Layout.preferredWidth: 180
                                                     Layout.alignment: Qt.AlignVCenter
-                                                    text: modelData.album || "—"
+                                                    text: modelData.album || ""
                                                     font.family: bodyFont
                                                     font.pixelSize: 12
                                                     color: textSecondary
@@ -1576,7 +1576,7 @@ ApplicationWindow {
 
                                                 Label {
                                                     Layout.fillWidth: true
-                                                    text: (modelData.artist || "Unknown Artist") + (modelData.album ? " — " + modelData.album : "")
+                                                    text: (modelData.artist || "Unknown Artist") + (modelData.album ? " \u00b7 " + modelData.album : "")
                                                     font.family: bodyFont
                                                     font.pixelSize: 11
                                                     color: textSecondary
@@ -2109,7 +2109,7 @@ ApplicationWindow {
 
                                             Label {
                                                 Layout.fillWidth: true
-                                                text: (modelData.artist || "Unknown Artist") + (modelData.album ? " — " + modelData.album : "")
+                                                text: (modelData.artist || "Unknown Artist") + (modelData.album ? " \u00b7 " + modelData.album : "")
                                                 font.family: bodyFont
                                                 font.pixelSize: 11
                                                 color: textSecondary
