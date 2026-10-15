@@ -77,7 +77,18 @@ class MetadataResolver:
             if gen_res.get("success"):
                 return gen_res
 
-        # 5. Search query (fallback / direct text search)
+        # 5. Fall back to a text search, but only when the input actually was
+        # one. A recognised provider link that produced nothing means that
+        # provider failed, not that the query was wrong - searching YouTube and
+        # Apple Music for the literal URL text burns two requests on noise and
+        # then reports "not found" for a track that does exist.
+        if service != "search":
+            label = {"apple_music": "Apple Music", "generic_url": "this link"}.get(service, service)
+            return {
+                "success": False,
+                "error": f"Could not read {label}. The provider may have changed or be temporarily unreachable."
+            }
+
         search_query = detected.get("query") or query_or_url
         tracks = []
         target = (target_service or "all").lower()
