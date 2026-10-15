@@ -51,6 +51,7 @@ class AppleMusicMetadata:
                 "release_date": release_date,
                 "genre": genre,
                 "source_url": song.get("trackViewUrl", ""),
+                "preview_url": song.get("previewUrl", ""),
                 "search_query": f"{artist} - {title} audio"
             }
         except Exception as e:
@@ -97,6 +98,7 @@ class AppleMusicMetadata:
                         "release_date": release_date,
                         "genre": genre,
                         "source_url": item.get("trackViewUrl", ""),
+                        "preview_url": item.get("previewUrl", ""),
                         "search_query": f"{t_artist} - {t_title} audio"
                     })
 
@@ -142,6 +144,7 @@ class AppleMusicMetadata:
                     "release_date": (item.get("releaseDate") or "")[:10],
                     "genre": item.get("primaryGenreName", ""),
                     "source_url": item.get("trackViewUrl", ""),
+                    "preview_url": item.get("previewUrl", ""),
                     "search_query": f"{artist} - {title} audio"
                 })
         except Exception as e:

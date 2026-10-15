@@ -1,45 +1,51 @@
 import os
+import sys
 import time
+from PyQt6.QtCore import QCoreApplication
 from core.metadata import MetadataResolver
 from core.downloader.queue_manager import QueueManager
-from PyQt6.QtCore import QCoreApplication
 
-app = QCoreApplication([])
-
-qm = QueueManager()
+app = QCoreApplication(sys.argv)
+qm = QueueManager.get_instance()
 finished = False
 success_result = None
 
-def on_prog(jid, pct, spd, eta, stat):
-    print(f"[{jid[:8]}] Progress: {pct:.1f}% | Speed: {spd} | ETA: {eta} | Status: {stat}")
-
-def on_fin(jid, path, meta):
+def on_queue_event(event_type: str, data: dict):
     global finished, success_result
-    print(f"[{jid[:8]}] SUCCESS! Saved to: {path}")
-    finished = True
-    success_result = path
+    jid = (data.get("job_id") or data.get("id", ""))[:8]
+    if event_type == "job_progress":
+        pct = data.get("progress", data.get("percent", 0.0))
+        spd = data.get("speed", "")
+        eta = data.get("eta", "")
+        stat = data.get("status", "")
+        print(f"[{jid}] Progress: {pct:.1f}% | Speed: {spd} | ETA: {eta} | Status: {stat}")
+    elif event_type in ("job_completed", "job_finished"):
+        path = data.get("file_path", "")
+        print(f"[{jid}] SUCCESS! Saved to: {path}")
+        success_result = path
+        finished = True
+    elif event_type in ("job_failed", "job_error"):
+        err = data.get("error", "Unknown error")
+        print(f"[{jid}] ERROR: {err}")
+        finished = True
 
-def on_err(jid, err):
-    global finished
-    print(f"[{jid[:8]}] ERROR: {err}")
-    finished = True
+qm.subscribe(on_queue_event)
 
-qm.job_progress.connect(on_prog)
-qm.job_finished.connect(on_fin)
-qm.job_error.connect(on_err)
+# Resolve an Apple Music track and drive it through the real download queue.
+res = MetadataResolver.resolve("Blinding Lights", "apple")
+if res.get("success") and res.get("tracks"):
+    track = res["tracks"][0]
+    print(f"Queueing: {track['title']} by {track['artist']} (Service: {track.get('service')})")
+    qm.add_tracks([track])
 
-# Resolve a quick track
-res = MetadataResolver.resolve("Mo City Flexologist", "youtube")
-track = res["tracks"][0]
-print(f"Queueing: {track['title']} by {track['artist']}")
-qm.add_tracks([track])
+    start = time.time()
+    while not finished and time.time() - start < 60:
+        app.processEvents()
+        time.sleep(0.05)
 
-start = time.time()
-while not finished and time.time() - start < 45:
-    app.processEvents()
-    time.sleep(0.1)
-
-if success_result and os.path.exists(success_result):
-    print("Download test PASSED! File size:", os.path.getsize(success_result), "bytes")
+    if success_result and os.path.exists(success_result):
+        print("Download test PASSED! File size:", os.path.getsize(success_result), "bytes")
+    else:
+        print("Download test timed out or failed.")
 else:
-    print("Download test timed out or failed.")
+    print("Could not resolve track (offline sandbox or network blocked):", res.get("error"))

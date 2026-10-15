@@ -6,15 +6,16 @@ Rectangle {
     id: root
     property string text: ""
     property string iconName: ""
+    property string swatchColor: ""
     property bool selected: false
 
     signal clicked()
 
     readonly property color contentColor: selected ? recordRedHover : (chipMouse.containsMouse ? textPrimary : textSecondary)
 
-    implicitWidth: chipContent.implicitWidth + 20
-    implicitHeight: 28
-    radius: height / 2
+    implicitWidth: chipContent.implicitWidth + 18
+    implicitHeight: 26
+    radius: 6
     color: selected ? surfaceSelected : (chipMouse.containsMouse ? surfaceElevated : surfaceTag)
     border.width: 1
     border.color: selected ? recordRed : (chipMouse.containsMouse ? borderVariant : borderSubtle)
@@ -31,6 +32,14 @@ Rectangle {
         id: chipContent
         anchors.centerIn: parent
         spacing: 6
+
+        Rectangle {
+            visible: root.swatchColor.length > 0
+            Layout.preferredWidth: 8
+            Layout.preferredHeight: 8
+            radius: 4
+            color: root.swatchColor.length > 0 ? root.swatchColor : "transparent"
+        }
 
         LucideIcon {
             visible: root.iconName.length > 0

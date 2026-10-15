@@ -6,12 +6,12 @@ Rectangle {
     default property alias content: inner.data
 
     Layout.fillWidth: true
-    implicitHeight: inner.implicitHeight + 12
-    radius: 14
+    implicitHeight: inner.implicitHeight + 16
+    radius: 8
     clip: true
     color: surfaceCard
-    border.width: 0
-    border.color: "transparent"
+    border.width: 1
+    border.color: borderSubtle
 
     ColumnLayout {
         id: inner
@@ -20,8 +20,8 @@ Rectangle {
         anchors.top: parent.top
         anchors.leftMargin: 20
         anchors.rightMargin: 20
-        anchors.topMargin: 6
-        anchors.bottomMargin: 6
+        anchors.topMargin: 8
+        anchors.bottomMargin: 8
         spacing: 0
     }
 }

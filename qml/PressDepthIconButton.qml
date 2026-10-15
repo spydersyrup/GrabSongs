@@ -6,12 +6,12 @@ Item {
     property string iconName: ""
     property int boxSize: 36
     property int iconSize: 18
-    property color tint: textPrimary
-    property color hoverTint: "#FFFFFF"
-    property color backgroundColor: surfaceCard
+    property color tint: silverDim
+    property color hoverTint: textPrimary
+    property color backgroundColor: "transparent"
     property color hoverBackgroundColor: surfaceElevated
-    property color borderColor: borderSubtle
-    property color hoverBorderColor: borderVariant
+    property color borderColor: "transparent"
+    property color hoverBorderColor: "transparent"
     property bool highlighted: false
     property alias accented: root.highlighted
     property string tooltipText: ""
@@ -37,8 +37,9 @@ Item {
         anchors.fill: parent
         radius: root.cornerRadius
         color: root.isHovered ? root.hoverBackgroundColor : root.backgroundColor
-        border.width: root.highlighted ? 1.5 : 1.0
-        border.color: root.highlighted ? recordRed : (root.isHovered ? root.hoverBorderColor : root.borderColor)
+        readonly property color currentBorderColor: root.highlighted ? recordRed : (root.isHovered ? root.hoverBorderColor : root.borderColor)
+        border.width: root.highlighted ? 1.5 : (currentBorderColor.toString() === "#00000000" || currentBorderColor === "transparent" ? 0 : 1.0)
+        border.color: currentBorderColor
 
         Behavior on color { ColorAnimation { duration: 130 } }
         Behavior on border.color { ColorAnimation { duration: 130 } }

@@ -50,16 +50,6 @@ Item {
         Behavior on width { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
         Behavior on color { ColorAnimation { duration: 120 } }
 
-        Rectangle {
-            visible: root.selected
-            anchors.left: parent.left
-            anchors.leftMargin: 2
-            anchors.verticalCenter: parent.verticalCenter
-            width: 3
-            height: 16
-            radius: 1.5
-            color: root.appWindow.recordRed
-        }
 
         LucideIcon {
             id: navIcon

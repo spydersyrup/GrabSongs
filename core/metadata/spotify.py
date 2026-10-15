@@ -90,6 +90,7 @@ class SpotifyMetadata:
             "track_number": track_number,
             "disc_number": 1,
             "source_url": f"https://open.spotify.com/track/{track_id}",
+            "preview_url": (entity.get("audioPreview", {}).get("url") if entity else "") or (entity.get("preview_url", "") if entity else ""),
             "search_query": f"{artist_str} - {title} audio"
         }
 

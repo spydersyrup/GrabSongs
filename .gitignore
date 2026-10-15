@@ -8,10 +8,6 @@ build/
 .venv/
 .covers/
 
-# Upstream reference repos
-freyr-src/
-apmyx-src/
-
 # Output and temp files
 downloads/
 temp/
@@ -22,7 +18,6 @@ scratch/
 *.flac
 *.opus
 config.json
-assets/screenshots/
 
 # Explicitly track AI coding rules, documentation, and agent configurations
 !AGENTS.md
@@ -34,6 +29,7 @@ assets/screenshots/
 !.coderabbit.yaml
 !.agents/
 !.agents/**
-!GrabSongs.exe
 
-
+# ...but never the agent session transcripts: they are local scratch, they carry
+# conversation content, and they grow without bound.
+.agents/logs/

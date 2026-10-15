@@ -18,35 +18,72 @@ ApplicationWindow {
     color: surfaceBase
     flags: Qt.Window | Qt.FramelessWindowHint | Qt.WindowMinimizeButtonHint | Qt.WindowMaximizeButtonHint | Qt.WindowCloseButtonHint
 
-    readonly property color recordRed: "#C23B30"
-    readonly property color recordRedHover: "#D64337"
-    readonly property color accentText: "#D8584E"
+    // -------------------------------------------------------------
+    // HUMAN-TONED PALETTE: Natural Warmth on Shades of Soot Black
+    // Zero glow, zero artificial neon, matte paper, linen & clay craft
+    // -------------------------------------------------------------
+    property string accentName: "terracotta"
+    property string customAccentColor: "#D95D39"
+    readonly property var accentColorMap: ({
+        "terracotta": { base: "#D95D39", hover: "#E86945", text: "#E86945", darkText: "#FFFFFF" },// Warm Terracotta / Burnt Coral
+        "tangerine":  { base: "#F05423", hover: "#FA6232", text: "#FA6232", darkText: "#FFFFFF" },// Industrial Signal Orange
+        "pine":       { base: "#3D7A5A", hover: "#4B8F6B", text: "#5EA67E", darkText: "#FFFFFF" },// Nordic Forest / Botanical Pine
+        "ochre":      { base: "#C88A2E", hover: "#D99B3D", text: "#E5A749", darkText: "#141312" },// Warm Ochre / Earthy Dijon
+        "linen":      { base: "#E4DFD7", hover: "#F2EDE6", text: "#E4DFD7", darkText: "#161514" } // Warm Unbleached Linen / Bone
+    })
 
-    readonly property color surfaceDeep: "#0B0A09"
-    readonly property color surfaceBase: "#0E0D0C"
-    readonly property color surfaceSidebar: "#131211"
-    readonly property color surfaceDock: "#151412"
-    readonly property color surfaceCard: "#181715"
-    readonly property color surfaceInput: "#1A1917"
-    readonly property color surfaceCardHover: "#22201D"
-    readonly property color surfaceElevated: "#282623"
-    readonly property color surfaceTag: surfaceCardHover
-    readonly property color surfaceSelected: "#2E1C1A"
+    property color recordRed: accentName === "custom"
+        ? Qt.color(customAccentColor)
+        : (accentColorMap[accentName] || accentColorMap["terracotta"]).base
+    property color recordRedHover: accentName === "custom"
+        ? Qt.lighter(Qt.color(customAccentColor), 1.15)
+        : (accentColorMap[accentName] || accentColorMap["terracotta"]).hover
+    property color accentText: accentName === "custom"
+        ? Qt.color(customAccentColor)
+        : (accentColorMap[accentName] || accentColorMap["terracotta"]).text
+    property color accentButtonText: (accentColorMap[accentName] || accentColorMap["terracotta"]).darkText
 
-    readonly property color silver: "#C4C4C0"
-    readonly property color silverDim: "#918E88"
-    readonly property color textPrimary: "#F5F0EC"
-    readonly property color textSecondary: "#A8A49E"
-    readonly property color textMuted: "#6B6762"
-    readonly property color danger: "#FF6B6B"
-    readonly property color success: "#34D399"
+    property color brandAccent: recordRed
+    property color brandAccentHover: recordRedHover
+    property color brandAccentText: accentText
 
-    readonly property color borderSubtle: Qt.alpha(textPrimary, 0.05)
-    readonly property color borderVariant: Qt.alpha(textPrimary, 0.09)
+    onAccentNameChanged: {
+        const item = accentColorMap[accentName] || accentColorMap["terracotta"]
+        recordRed = (accentName === "custom" ? Qt.color(customAccentColor) : item.base)
+        recordRedHover = (accentName === "custom" ? Qt.lighter(Qt.color(customAccentColor), 1.15) : item.hover)
+        accentText = (accentName === "custom" ? Qt.color(customAccentColor) : item.text)
+        accentButtonText = (accentName === "custom" ? "#FFFFFF" : item.darkText)
+        brandAccent = recordRed
+        brandAccentHover = recordRedHover
+        brandAccentText = accentText
+    }
+
+    // Rich soot & obsidian dark palette (Clean, deep, non-muddy, human warmth)
+    readonly property color surfaceDeep: "#090909"
+    readonly property color surfaceBase: "#0E0E0E"
+    readonly property color surfaceSidebar: "#131313"
+    readonly property color surfaceDock: "#151515"
+    readonly property color surfaceCard: "#181818"
+    readonly property color surfaceInput: "#141414"
+    readonly property color surfaceCardHover: "#1F1F1F"
+    readonly property color surfaceElevated: "#242424"
+    readonly property color surfaceTag: "#1B1B1B"
+    readonly property color surfaceSelected: "#242424"
+
+    readonly property color silver: "#E5E2DC"
+    readonly property color silverDim: "#8C867E"
+    readonly property color textPrimary: "#F4F1EB"
+    readonly property color textSecondary: "#9E978E"
+    readonly property color textMuted: "#635E57"
+    readonly property color danger: "#D65A5A"
+    readonly property color success: "#5EA67A"
+
+    readonly property color borderSubtle: "#222222"
+    readonly property color borderVariant: "#2B2B2B"
     readonly property color borderCard: borderVariant
 
     // Typography
-    readonly property string displayFont: (typeof displayFontFamily !== "undefined" && displayFontFamily) ? displayFontFamily : "Space Grotesk"
+    readonly property string displayFont: (typeof displayFontFamily !== "undefined" && displayFontFamily) ? displayFontFamily : "IBM Plex Sans"
     readonly property string bodyFont: (typeof bodyFontFamily !== "undefined" && bodyFontFamily) ? bodyFontFamily : "IBM Plex Sans"
     readonly property string monoFont: (typeof monoFontFamily !== "undefined" && monoFontFamily) ? monoFontFamily : "IBM Plex Mono"
 
@@ -91,22 +128,19 @@ ApplicationWindow {
             window.searchResults = []
             window.resolvedCollection = null
         }
-        function onSearchFinished(tracks) {
+        function onSearchFinished(tracks, collection) {
             window.isSearching = false
             window.searchResults = tracks
-            if (tracks.length > 1 && tracks[0] && (tracks[0].album || tracks[0].service)) {
-                window.resolvedCollection = {
-                    title: tracks[0].album || (tracks[0].artist + " Collection"),
-                    artist: tracks[0].artist || "",
-                    cover_url: tracks[0].cover_url || "",
-                    count: tracks.length,
-                    service: tracks[0].service || "all"
-                }
-            }
+            window.resolvedCollection = collection || null
         }
         function onSearchFailed(err) {
             window.isSearching = false
             window.searchError = err
+        }
+        function onJobProgress(job_id, percent, speed, eta) {
+            if (downloaderBridge && window.page === "queue") {
+                window.activeJobs = downloaderBridge.getActiveJobs()
+            }
         }
         function onJobFinished(job_id, success, msg) {
             if (downloaderBridge) {
@@ -119,12 +153,20 @@ ApplicationWindow {
                 window.downloadedFiles = downloaderBridge.getDownloadedFiles()
             }
         }
+        function onConfigChanged() {
+            if (downloaderBridge && downloaderBridge.accentName) {
+                window.accentName = downloaderBridge.accentName
+            }
+        }
     }
 
     Component.onCompleted: {
         if (downloaderBridge) {
             window.activeJobs = downloaderBridge.getActiveJobs()
             window.downloadedFiles = downloaderBridge.getDownloadedFiles()
+            if (downloaderBridge.accentName) {
+                window.accentName = downloaderBridge.accentName
+            }
         }
     }
 
@@ -150,12 +192,22 @@ ApplicationWindow {
         return mins + ":" + (secs < 10 ? "0" : "") + secs
     }
 
+    function formatServiceName(s) {
+        if (!s) return ""
+        const lower = s.toLowerCase()
+        if (lower === "apple_music" || lower === "apple") return "Apple Music"
+        if (lower === "spotify") return "Spotify"
+        if (lower === "youtube") return "YouTube"
+        if (lower === "deezer") return "Deezer"
+        return s.replace(/_/g, " ")
+    }
+
     Rectangle {
         id: customTitleBar
         anchors.top: parent.top
         anchors.left: parent.left
         anchors.right: parent.right
-        height: 60
+        height: 42
         color: surfaceBase
         z: 100
 
@@ -166,64 +218,50 @@ ApplicationWindow {
             onDoubleClicked: toggleMaximize()
         }
 
-        // Title and Subtitle / Counter
-        RowLayout {
+        // Left Sidebar Header Compartment (Matches sidebarPanel width and surfaceSidebar background)
+        Rectangle {
+            id: sidebarHeaderSection
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
             anchors.left: parent.left
-            anchors.leftMargin: 20
-            anchors.verticalCenter: parent.verticalCenter
-            spacing: 12
+            width: sidebarPanel.width
+            color: surfaceSidebar
+            clip: true
 
-            // CassetteCat branding icon
+            // Continuous vertical divider connecting with sidebarPanel's right border
             Rectangle {
-                width: 34
-                height: 34
-                radius: 8
-                color: surfaceCard
-                border.width: 1
-                border.color: borderVariant
-
-                Image {
-                    anchors.centerIn: parent
-                    width: 22
-                    height: 22
-                    source: (typeof appIconUrl !== "undefined" && appIconUrl) ? appIconUrl : ""
-                    fillMode: Image.PreserveAspectFit
-                }
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+                anchors.right: parent.right
+                width: 1
+                color: borderSubtle
             }
 
+            // Typographic application title (aligned with sidebar content padding)
             Label {
-                text: {
-                    if (window.page === "explore") return "Explore"
-                    if (window.page === "queue") return "Download Queue"
-                    if (window.page === "library") return "GrabSongs Library"
-                    if (window.page === "settings") return "Settings"
-                    return "GrabSongs"
-                }
+                anchors.left: parent.left
+                anchors.leftMargin: window.sidebarCollapsed ? 18 : 24
+                anchors.verticalCenter: parent.verticalCenter
+                text: window.sidebarCollapsed ? "GS" : "GrabSongs"
                 color: textPrimary
                 font.family: displayFont
-                font.pixelSize: 22
+                font.pixelSize: 15
                 font.weight: Font.Bold
-                font.letterSpacing: -0.3
-            }
-
-            Label {
-                text: {
-                    if (window.page === "explore") {
-                        return (downloaderBridge ? downloaderBridge.audioQuality + " kbps " + downloaderBridge.audioFormat.toUpperCase() : "320 kbps MP3")
-                    }
-                    if (window.page === "queue") return window.activeJobs.length + " active"
-                    if (window.page === "library") return window.downloadedFiles.length + " songs"
-                    return "Download Service"
-                }
-                color: silverDim
-                font.family: monoFont
-                font.pixelSize: 11
-                Layout.leftMargin: 4
+                font.letterSpacing: -0.2
             }
         }
 
-        // Window Controls (minBtn, maxBtn, closeBtn matching Main.qml)
+        // Workspace Titlebar Drag Area
+        Item {
+            anchors.left: sidebarHeaderSection.right
+            anchors.right: windowControlsRow.left
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+        }
+
+        // Window Controls (minBtn, maxBtn, closeBtn)
         Row {
+            id: windowControlsRow
             anchors.right: parent.right
             anchors.top: parent.top
             anchors.bottom: parent.bottom
@@ -231,14 +269,15 @@ ApplicationWindow {
             // Minimize
             Rectangle {
                 id: minBtn
-                width: 48
-                height: 60
+                width: 44
+                height: 42
                 color: minBtnMouse.containsMouse ? surfaceElevated : "transparent"
 
-                Rectangle {
+                LucideIcon {
                     anchors.centerIn: parent
-                    width: 10
-                    height: 1.2
+                    width: 14
+                    height: 14
+                    icon: "minus"
                     color: minBtnMouse.containsMouse ? textPrimary : silverDim
                 }
 
@@ -254,18 +293,16 @@ ApplicationWindow {
             // Maximize / Restore
             Rectangle {
                 id: maxBtn
-                width: 48
-                height: 60
+                width: 44
+                height: 42
                 color: maxBtnMouse.containsMouse ? surfaceElevated : "transparent"
 
-                Rectangle {
+                LucideIcon {
                     anchors.centerIn: parent
-                    width: 10
-                    height: 10
-                    color: "transparent"
-                    border.width: 1.2
-                    border.color: maxBtnMouse.containsMouse ? textPrimary : silverDim
-                    radius: 1
+                    width: 12
+                    height: 12
+                    icon: "maximize-2"
+                    color: maxBtnMouse.containsMouse ? textPrimary : silverDim
                 }
 
                 MouseArea {
@@ -277,19 +314,19 @@ ApplicationWindow {
                 }
             }
 
-            // Close (turns recordRed on hover!)
+            // Close
             Rectangle {
                 id: closeBtn
-                width: 48
-                height: 60
+                width: 44
+                height: 42
                 color: closeBtnMouse.containsMouse ? recordRed : "transparent"
 
-                Label {
+                LucideIcon {
                     anchors.centerIn: parent
-                    text: "✕"
+                    width: 14
+                    height: 14
+                    icon: "x"
                     color: closeBtnMouse.containsMouse ? "#FFFFFF" : silverDim
-                    font.family: displayFont
-                    font.pixelSize: 12
                 }
 
                 MouseArea {
@@ -353,8 +390,8 @@ ApplicationWindow {
                         sidebarWidth: sidebarPanel.width
                         sidebarCollapsed: window.sidebarCollapsed
                         destination: "explore"
-                        iconName: "house"
-                        label: "Explore & Grab"
+                        iconName: "search"
+                        label: "Search"
                     }
 
                     NavItem {
@@ -362,8 +399,8 @@ ApplicationWindow {
                         sidebarWidth: sidebarPanel.width
                         sidebarCollapsed: window.sidebarCollapsed
                         destination: "queue"
-                        iconName: "clock"
-                        label: "Download Queue"
+                        iconName: "arrow-down"
+                        label: "Downloads"
                     }
 
                     NavItem {
@@ -372,7 +409,7 @@ ApplicationWindow {
                         sidebarCollapsed: window.sidebarCollapsed
                         destination: "library"
                         iconName: "music"
-                        label: "GrabSongs Library"
+                        label: "Library"
                     }
                 }
 
@@ -396,7 +433,7 @@ ApplicationWindow {
 
                     Item { width: 1; height: 2 }
 
-                    // Open GrabSongs Folder action
+                    // Open Music Folder action
                     Item {
                         width: sidebarPanel.width
                         height: 40
@@ -425,7 +462,7 @@ ApplicationWindow {
                                 anchors.left: parent.left
                                 anchors.leftMargin: 46
                                 anchors.verticalCenter: parent.verticalCenter
-                                text: "GrabSongs Folder"
+                                text: "Open Music Folder"
                                 color: fldMouse.containsMouse ? textPrimary : textSecondary
                                 font.family: displayFont
                                 font.pixelSize: 13
@@ -459,8 +496,7 @@ ApplicationWindow {
                         height: 40
 
                         Rectangle {
-                            anchors.left: parent.left
-                            anchors.leftMargin: 10
+                            anchors.horizontalCenter: parent.horizontalCenter
                             anchors.verticalCenter: parent.verticalCenter
                             width: window.sidebarCollapsed ? 44 : 180
                             height: 40
@@ -526,203 +562,207 @@ ApplicationWindow {
                         return 0
                     }
 
+                    // =========================================================
+                    // PAGE 1: SEARCH & DOWNLOAD (EXPLORE)
+                    // =========================================================
                     Item {
+                        id: explorePageItem
+
                         ColumnLayout {
                             anchors.fill: parent
-                            anchors.topMargin: 16
-                            spacing: 14
+                            anchors.leftMargin: 28
+                            anchors.rightMargin: 28
+                            anchors.topMargin: 12
+                            anchors.bottomMargin: 16
+                            spacing: 12
 
+                            // -------------------------------------------------
+                            // Search Box (Quiet, sleek 40px desktop input)
+                            // -------------------------------------------------
                             Rectangle {
                                 id: pageSearchBox
                                 Layout.fillWidth: true
-                                Layout.leftMargin: 28
-                                Layout.rightMargin: 28
-                                Layout.preferredHeight: 46
-                                radius: 12
-                                color: pageSearchInput.activeFocus ? surfaceElevated : surfaceCard
-                                border.width: pageSearchInput.activeFocus ? 1.5 : 1
-                                border.color: pageSearchInput.activeFocus ? recordRedHover : borderVariant
+                                Layout.preferredHeight: 40
+                                radius: 8
+                                color: pageSearchInput.activeFocus ? surfaceElevated : surfaceInput
+                                border.width: 1
+                                border.color: pageSearchInput.activeFocus ? borderVariant : borderSubtle
 
                                 Behavior on color { ColorAnimation { duration: 120 } }
                                 Behavior on border.color { ColorAnimation { duration: 120 } }
 
                                 RowLayout {
                                     anchors.fill: parent
-                                    anchors.leftMargin: 16
+                                    anchors.leftMargin: 14
                                     anchors.rightMargin: 10
                                     spacing: 10
 
                                     LucideIcon {
-                                        Layout.preferredWidth: 18
-                                        Layout.preferredHeight: 18
+                                        Layout.preferredWidth: 16
+                                        Layout.preferredHeight: 16
+                                        Layout.alignment: Qt.AlignVCenter
                                         icon: "search"
-                                        color: pageSearchInput.activeFocus ? recordRedHover : silverDim
+                                        color: pageSearchInput.activeFocus ? textPrimary : textSecondary
                                         Behavior on color { ColorAnimation { duration: 120 } }
                                     }
 
                                     TextInput {
                                         id: pageSearchInput
                                         Layout.fillWidth: true
+                                        Layout.alignment: Qt.AlignVCenter
+                                        verticalAlignment: TextInput.AlignVCenter
                                         color: textPrimary
-                                        font.family: displayFont
-                                        font.pixelSize: 14
-                                        font.weight: Font.Medium
+                                        font.family: bodyFont
+                                        font.pixelSize: 13
                                         selectByMouse: true
                                         onAccepted: window.triggerSearch()
 
                                         Text {
                                             anchors.fill: parent
                                             visible: !pageSearchInput.text && !pageSearchInput.activeFocus
-                                            text: "Search songs, artists, albums, or paste links (Spotify, Apple Music, YouTube, Deezer)..."
-                                            color: silverDim
-                                            font.family: displayFont
-                                            font.pixelSize: 14
+                                            text: "Search songs, albums, artists, or paste a link..."
+                                            color: textMuted
+                                            font.family: bodyFont
+                                            font.pixelSize: 13
                                             verticalAlignment: Text.AlignVCenter
                                         }
                                     }
 
-                                    // Keyboard shortcut / Enter hint when idle
-                                    Rectangle {
-                                        visible: pageSearchInput.text.length === 0
-                                        Layout.preferredHeight: 22
-                                        Layout.preferredWidth: shortcutLabel.implicitWidth + 12
-                                        radius: 5
-                                        color: surfaceTag
-                                        border.width: 1
-                                        border.color: borderSubtle
-
-                                        Label {
-                                            id: shortcutLabel
-                                            anchors.centerIn: parent
-                                            text: "Enter"
-                                            color: silverDim
-                                            font.family: monoFont
-                                            font.pixelSize: 10
-                                            font.weight: Font.DemiBold
-                                        }
-                                    }
-
-                                    // Clear button when active text exists
-                                    Rectangle {
-                                        visible: pageSearchInput.text.length > 0
-                                        Layout.preferredWidth: 24
-                                        Layout.preferredHeight: 24
-                                        radius: 12
-                                        color: clearMouse.containsMouse ? surfaceElevated : "transparent"
-
-                                        LucideIcon {
-                                            anchors.centerIn: parent
-                                            width: 14
-                                            height: 14
-                                            icon: "x"
-                                            color: clearMouse.containsMouse ? textPrimary : silverDim
-                                        }
-
-                                        MouseArea {
-                                            id: clearMouse
-                                            anchors.fill: parent
-                                            hoverEnabled: true
-                                            cursorShape: Qt.PointingHandCursor
-                                            onClicked: {
-                                                pageSearchInput.text = ""
-                                                pageSearchInput.forceActiveFocus()
-                                            }
-                                        }
-                                    }
-
-                                    // Paste from clipboard button
+                                    // Quick Paste Button when search is empty
                                     PressDepthIconButton {
                                         visible: pageSearchInput.text.length === 0
-                                        boxSize: 32
-                                        iconSize: 15
+                                        Layout.preferredWidth: 28
+                                        Layout.preferredHeight: 28
+                                        Layout.alignment: Qt.AlignVCenter
+                                        boxSize: 28
+                                        iconSize: 14
+                                        cornerRadius: 6
+                                        backgroundColor: "transparent"
+                                        borderColor: "transparent"
+                                        hoverBackgroundColor: surfaceCardHover
+                                        hoverBorderColor: "transparent"
                                         iconName: "clipboard"
-                                        tooltipText: "Paste link or query from clipboard"
+                                        tint: textSecondary
+                                        hoverTint: textPrimary
+                                        tooltipText: "Paste from clipboard (Ctrl+V)"
                                         onClicked: {
                                             if (downloaderBridge) {
-                                                const cb = downloaderBridge.getClipboardText().trim()
-                                                if (cb) {
-                                                    pageSearchInput.text = cb
-                                                    window.triggerSearch(cb)
+                                                const clip = downloaderBridge.getClipboardText().trim()
+                                                if (clip) {
+                                                    pageSearchInput.text = clip
+                                                    window.triggerSearch(clip)
                                                 }
                                             }
                                         }
                                     }
 
-                                    // Action / Execute button (PressDepthIconButton)
+                                    // Clear Button when text entered
                                     PressDepthIconButton {
-                                        visible: pageSearchInput.text.length > 0
-                                        boxSize: 32
-                                        iconSize: 15
-                                        iconName: window.isSearching ? "loader" : "arrow-right"
-                                        highlighted: true
-                                        tooltipText: "Search or Grab"
-                                        onClicked: window.triggerSearch()
+                                        visible: pageSearchInput.text.length > 0 || window.searchResults.length > 0
+                                        Layout.preferredWidth: 28
+                                        Layout.preferredHeight: 28
+                                        Layout.alignment: Qt.AlignVCenter
+                                        boxSize: 28
+                                        iconSize: 14
+                                        cornerRadius: 6
+                                        backgroundColor: "transparent"
+                                        borderColor: "transparent"
+                                        hoverBackgroundColor: surfaceCardHover
+                                        hoverBorderColor: "transparent"
+                                        iconName: "x"
+                                        tint: textSecondary
+                                        hoverTint: textPrimary
+                                        tooltipText: "Clear"
+                                        onClicked: {
+                                            pageSearchInput.text = ""
+                                            window.searchResults = []
+                                            window.resolvedCollection = null
+                                            window.searchError = ""
+                                            pageSearchInput.forceActiveFocus()
+                                        }
                                     }
                                 }
                             }
 
-                            // Platform Filter Chips (using authentic FilterChip.qml)
+                            // -------------------------------------------------
+                            // Source Filter Tabs Row
+                            // -------------------------------------------------
                             RowLayout {
                                 Layout.fillWidth: true
-                                Layout.leftMargin: 28
-                                Layout.rightMargin: 28
-                                spacing: 8
+                                spacing: 6
 
-                                FilterChip {
-                                    text: "All Platforms"
-                                    iconName: "disc"
-                                    selected: window.activePlatform === "all"
-                                    onClicked: {
-                                        window.activePlatform = "all"
-                                        if (pageSearchInput.text.trim()) window.triggerSearch()
-                                    }
-                                }
+                                Repeater {
+                                    model: [
+                                        { id: "all", label: "All Sources" },
+                                        { id: "spotify", label: "Spotify" },
+                                        { id: "apple", label: "Apple Music" },
+                                        { id: "youtube", label: "YouTube" },
+                                        { id: "deezer", label: "Deezer" }
+                                    ]
 
-                                FilterChip {
-                                    text: "Spotify"
-                                    iconName: "music"
-                                    selected: window.activePlatform === "spotify"
-                                    onClicked: {
-                                        window.activePlatform = "spotify"
-                                        if (pageSearchInput.text.trim()) window.triggerSearch()
-                                    }
-                                }
+                                    delegate: Rectangle {
+                                        required property var modelData
+                                        readonly property bool isSelected: window.activePlatform === modelData.id
+                                        Layout.preferredWidth: tabLabel.implicitWidth + 20
+                                        Layout.preferredHeight: 28
+                                        Layout.alignment: Qt.AlignVCenter
+                                        radius: 6
+                                        color: isSelected ? surfaceElevated : (tabMouse.containsMouse ? surfaceCardHover : "transparent")
+                                        border.width: isSelected ? 1 : 0
+                                        border.color: isSelected ? borderVariant : "transparent"
 
-                                FilterChip {
-                                    text: "Apple Music"
-                                    iconName: "headphones"
-                                    selected: window.activePlatform === "apple"
-                                    onClicked: {
-                                        window.activePlatform = "apple"
-                                        if (pageSearchInput.text.trim()) window.triggerSearch()
-                                    }
-                                }
+                                        Behavior on color { ColorAnimation { duration: 100 } }
 
-                                FilterChip {
-                                    text: "YouTube"
-                                    iconName: "play"
-                                    selected: window.activePlatform === "youtube"
-                                    onClicked: {
-                                        window.activePlatform = "youtube"
-                                        if (pageSearchInput.text.trim()) window.triggerSearch()
-                                    }
-                                }
+                                        Label {
+                                            id: tabLabel
+                                            anchors.centerIn: parent
+                                            text: modelData.label
+                                            color: isSelected ? textPrimary : (tabMouse.containsMouse ? textPrimary : textSecondary)
+                                            font.family: bodyFont
+                                            font.pixelSize: 12
+                                            font.weight: isSelected ? Font.DemiBold : Font.Normal
+                                        }
 
-                                FilterChip {
-                                    text: "Deezer"
-                                    iconName: "audio-lines"
-                                    selected: window.activePlatform === "deezer"
-                                    onClicked: {
-                                        window.activePlatform = "deezer"
-                                        if (pageSearchInput.text.trim()) window.triggerSearch()
+                                        MouseArea {
+                                            id: tabMouse
+                                            anchors.fill: parent
+                                            hoverEnabled: true
+                                            cursorShape: Qt.PointingHandCursor
+                                            onClicked: {
+                                                window.activePlatform = modelData.id
+                                                if (pageSearchInput.text.trim()) window.triggerSearch()
+                                            }
+                                        }
                                     }
                                 }
 
                                 Item { Layout.fillWidth: true }
 
-                                // Batch Download All Button (SettingButton from main app)
+                                // Audio Format Indicator (clean, quiet, no decorative status dots)
+                                Rectangle {
+                                    Layout.preferredHeight: 26
+                                    Layout.preferredWidth: fmtBadgeLabel.implicitWidth + 16
+                                    Layout.alignment: Qt.AlignVCenter
+                                    radius: 6
+                                    color: surfaceTag
+                                    border.width: 1
+                                    border.color: borderSubtle
+
+                                    Label {
+                                        id: fmtBadgeLabel
+                                        anchors.centerIn: parent
+                                        text: (downloaderBridge ? downloaderBridge.audioQuality + " kbps " + downloaderBridge.audioFormat.toUpperCase() : "320 kbps MP3")
+                                        color: textSecondary
+                                        font.family: bodyFont
+                                        font.pixelSize: 11
+                                        font.weight: Font.Normal
+                                    }
+                                }
+
+                                // Batch Download All Button (Only shown when no collection banner is showing)
                                 SettingButton {
-                                    visible: window.searchResults.length > 1
+                                    visible: window.searchResults.length > 1 && (!window.resolvedCollection || !window.resolvedCollection.title)
+                                    Layout.alignment: Qt.AlignVCenter
                                     text: "Download All (" + window.searchResults.length + ")"
                                     iconName: "arrow-down"
                                     primary: true
@@ -735,92 +775,50 @@ ApplicationWindow {
                                 }
                             }
 
-                            // Main Results / Empty State / Loading Workspace
+                            // -------------------------------------------------
+                            // Main Content Area
+                            // -------------------------------------------------
                             Item {
                                 Layout.fillWidth: true
                                 Layout.fillHeight: true
-                                Layout.leftMargin: 28
-                                Layout.rightMargin: 28
 
-                                // ---------------------------------------------
-                                // EMPTY STATE: Centered Card matching reference
-                                // ---------------------------------------------
-                                Rectangle {
+                                // EMPTY STATE: Quiet, human, dignified
+                                ColumnLayout {
                                     visible: !window.isSearching && window.searchResults.length === 0 && !window.searchError
                                     anchors.centerIn: parent
-                                    width: Math.min(parent.width - 40, 580)
-                                    height: 250
-                                    radius: 14
-                                    color: surfaceCard
-                                    border.width: 1
-                                    border.color: borderSubtle
+                                    spacing: 12
+                                    width: Math.min(parent.width - 64, 420)
 
-                                    ColumnLayout {
-                                        anchors.centerIn: parent
-                                        spacing: 12
-                                        width: parent.width - 48
+                                    LucideIcon {
+                                        Layout.alignment: Qt.AlignHCenter
+                                        Layout.preferredWidth: 38
+                                        Layout.preferredHeight: 38
+                                        icon: "music"
+                                        color: textSecondary
+                                    }
 
-                                        Item {
-                                            Layout.alignment: Qt.AlignHCenter
-                                            width: 44
-                                            height: 44
+                                    Label {
+                                        Layout.alignment: Qt.AlignHCenter
+                                        text: "Search or Paste a Link"
+                                        font.family: displayFont
+                                        font.pixelSize: 16
+                                        font.weight: Font.DemiBold
+                                        color: textPrimary
+                                    }
 
-                                            Rectangle {
-                                                anchors.centerIn: parent
-                                                width: 42
-                                                height: 42
-                                                radius: 21
-                                                color: "transparent"
-                                                border.width: 2.5
-                                                border.color: recordRed
-                                            }
-                                            Rectangle {
-                                                anchors.centerIn: parent
-                                                width: 24
-                                                height: 24
-                                                radius: 12
-                                                color: "transparent"
-                                                border.width: 1.5
-                                                border.color: Qt.rgba(recordRed.r, recordRed.g, recordRed.b, 0.7)
-                                            }
-                                            Rectangle {
-                                                anchors.centerIn: parent
-                                                width: 8
-                                                height: 8
-                                                radius: 4
-                                                color: recordRed
-                                            }
-                                        }
-
-                                        Label {
-                                            Layout.alignment: Qt.AlignHCenter
-                                            text: "CassetteCat Universal Music Hub"
-                                            font.family: displayFont
-                                            font.pixelSize: 16
-                                            font.weight: Font.Bold
-                                            color: textPrimary
-                                        }
-
-                                        Label {
-                                            Layout.alignment: Qt.AlignHCenter
-                                            text: "Paste URLs from Spotify, Apple Music, Deezer, YouTube, or type track titles."
-                                            font.family: bodyFont
-                                            font.pixelSize: 13
-                                            color: textSecondary
-                                            horizontalAlignment: Text.AlignHCenter
-                                        }
-
-                                        Label {
-                                            Layout.alignment: Qt.AlignHCenter
-                                            text: "Full album discographies, high-res artwork, and synchronized lyrics are processed seamlessly."
-                                            font.family: bodyFont
-                                            font.pixelSize: 12
-                                            color: textMuted
-                                            horizontalAlignment: Text.AlignHCenter
-                                        }
+                                    Label {
+                                        Layout.alignment: Qt.AlignHCenter
+                                        Layout.fillWidth: true
+                                        text: "Find tracks, albums, or playlists across Spotify, Apple Music, YouTube, and Deezer."
+                                        font.family: bodyFont
+                                        font.pixelSize: 13
+                                        color: textSecondary
+                                        horizontalAlignment: Text.AlignHCenter
+                                        wrapMode: Text.WordWrap
                                     }
                                 }
 
+                                // LOADING STATE
                                 ColumnLayout {
                                     visible: window.isSearching
                                     anchors.centerIn: parent
@@ -833,77 +831,142 @@ ApplicationWindow {
 
                                     Label {
                                         Layout.alignment: Qt.AlignHCenter
-                                        text: "Resolving metadata & extracting high-quality audio streams..."
+                                        text: "Resolving metadata & scraping audio streams..."
                                         font.family: bodyFont
                                         font.pixelSize: 13
+                                        font.weight: Font.DemiBold
+                                        color: textPrimary
+                                    }
+
+                                    Label {
+                                        Layout.alignment: Qt.AlignHCenter
+                                        text: "Querying Spotify, Apple Music, Deezer, and YouTube providers"
+                                        font.family: bodyFont
+                                        font.pixelSize: 12
                                         color: textSecondary
                                     }
                                 }
 
+                                // ERROR STATE
+                                ColumnLayout {
+                                    visible: !window.isSearching && window.searchError.length > 0
+                                    anchors.centerIn: parent
+                                    spacing: 12
+                                    width: Math.min(parent.width - 40, 480)
+
+                                    LucideIcon {
+                                        Layout.alignment: Qt.AlignHCenter
+                                        Layout.preferredWidth: 32
+                                        Layout.preferredHeight: 32
+                                        icon: "info"
+                                        color: danger
+                                    }
+
+                                    Label {
+                                        Layout.alignment: Qt.AlignHCenter
+                                        text: "Unable to Resolve Link"
+                                        font.family: displayFont
+                                        font.pixelSize: 16
+                                        font.weight: Font.Bold
+                                        color: textPrimary
+                                    }
+
+                                    Label {
+                                        Layout.alignment: Qt.AlignHCenter
+                                        Layout.fillWidth: true
+                                        text: window.searchError
+                                        font.family: bodyFont
+                                        font.pixelSize: 12
+                                        color: textSecondary
+                                        horizontalAlignment: Text.AlignHCenter
+                                        wrapMode: Text.WordWrap
+                                    }
+                                }
+
+                                // RESULTS WORKSPACE
                                 ColumnLayout {
                                     visible: !window.isSearching && window.searchResults.length > 0
                                     anchors.fill: parent
                                     spacing: 10
 
+                                    // Resolved Collection Header (Album / Playlist Banner)
                                     Rectangle {
-                                        visible: window.resolvedCollection !== null
+                                        visible: !!(window.resolvedCollection && window.resolvedCollection.title)
                                         Layout.fillWidth: true
-                                        Layout.preferredHeight: 88
-                                        radius: 12
+                                        Layout.preferredHeight: 84
+                                        radius: 10
                                         color: surfaceCard
                                         border.width: 1
                                         border.color: borderSubtle
 
                                         RowLayout {
                                             anchors.fill: parent
-                                            anchors.margins: 12
+                                            anchors.margins: 14
                                             spacing: 16
 
                                             Rectangle {
-                                                Layout.preferredWidth: 64
-                                                Layout.preferredHeight: 64
+                                                Layout.preferredWidth: 56
+                                                Layout.preferredHeight: 56
+                                                Layout.alignment: Qt.AlignVCenter
                                                 radius: 8
                                                 clip: true
                                                 color: surfaceElevated
+                                                border.width: 1
+                                                border.color: borderSubtle
+
+                                                LucideIcon {
+                                                    anchors.centerIn: parent
+                                                    width: 22
+                                                    height: 22
+                                                    icon: "disc"
+                                                    color: textMuted
+                                                    visible: !collImg.visible || collImg.status !== Image.Ready
+                                                }
 
                                                 Image {
+                                                    id: collImg
                                                     anchors.fill: parent
                                                     source: (window.resolvedCollection && window.resolvedCollection.cover_url) ? window.resolvedCollection.cover_url : ""
                                                     fillMode: Image.PreserveAspectCrop
+                                                    visible: status === Image.Ready && source.toString().length > 0
                                                 }
                                             }
 
                                             ColumnLayout {
                                                 Layout.fillWidth: true
-                                                spacing: 4
-
-                                                Label {
-                                                    text: (window.resolvedCollection && window.resolvedCollection.service ? window.resolvedCollection.service.toUpperCase() : "COLLECTION")
-                                                    font.family: monoFont
-                                                    font.pixelSize: 10
-                                                    font.weight: Font.Bold
-                                                    color: accentText
-                                                }
+                                                Layout.alignment: Qt.AlignVCenter
+                                                spacing: 3
 
                                                 Label {
                                                     text: window.resolvedCollection ? window.resolvedCollection.title : ""
                                                     font.family: displayFont
-                                                    font.pixelSize: 16
+                                                    font.pixelSize: 17
                                                     font.weight: Font.Bold
                                                     color: textPrimary
                                                     elide: Text.ElideRight
                                                 }
 
                                                 Label {
-                                                    text: (window.resolvedCollection ? window.resolvedCollection.artist + " • " + window.resolvedCollection.count + " tracks" : "")
+                                                    text: {
+                                                        if (!window.resolvedCollection) return ""
+                                                        var parts = []
+                                                        if (window.resolvedCollection.artist) parts.push(window.resolvedCollection.artist)
+                                                        if (window.resolvedCollection.count) parts.push(window.resolvedCollection.count + " tracks")
+                                                        if (window.resolvedCollection.service) {
+                                                            parts.push(window.formatServiceName(window.resolvedCollection.service))
+                                                        }
+                                                        return parts.join(" • ")
+                                                    }
                                                     font.family: bodyFont
                                                     font.pixelSize: 12
                                                     color: textSecondary
+                                                    elide: Text.ElideRight
                                                 }
                                             }
 
                                             SettingButton {
-                                                text: "Download Collection"
+                                                Layout.alignment: Qt.AlignVCenter
+                                                text: "Download All Tracks"
                                                 iconName: "arrow-down"
                                                 primary: true
                                                 onClicked: {
@@ -916,6 +979,101 @@ ApplicationWindow {
                                         }
                                     }
 
+                                    // Table Header
+                                    Rectangle {
+                                        Layout.fillWidth: true
+                                        Layout.preferredHeight: 28
+                                        color: "transparent"
+
+                                        RowLayout {
+                                            anchors.fill: parent
+                                            anchors.leftMargin: 16
+                                            anchors.rightMargin: 16
+                                            spacing: 12
+
+                                            Label {
+                                                Layout.preferredWidth: 28
+                                                Layout.alignment: Qt.AlignVCenter
+                                                text: "#"
+                                                font.family: bodyFont
+                                                font.pixelSize: 11
+                                                font.weight: Font.DemiBold
+                                                color: silverDim
+                                                horizontalAlignment: Text.AlignRight
+                                            }
+
+                                            Item {
+                                                Layout.preferredWidth: 38
+                                                Layout.alignment: Qt.AlignVCenter
+                                            }
+
+                                            Label {
+                                                Layout.fillWidth: true
+                                                Layout.alignment: Qt.AlignVCenter
+                                                text: "TITLE"
+                                                font.family: bodyFont
+                                                font.pixelSize: 11
+                                                font.weight: Font.DemiBold
+                                                color: silverDim
+                                            }
+
+                                            Label {
+                                                Layout.preferredWidth: 180
+                                                Layout.alignment: Qt.AlignVCenter
+                                                text: "ALBUM"
+                                                font.family: bodyFont
+                                                font.pixelSize: 11
+                                                font.weight: Font.DemiBold
+                                                color: silverDim
+                                            }
+
+                                            Label {
+                                                Layout.preferredWidth: 80
+                                                Layout.alignment: Qt.AlignVCenter
+                                                text: "SOURCE"
+                                                font.family: bodyFont
+                                                font.pixelSize: 11
+                                                font.weight: Font.DemiBold
+                                                color: silverDim
+                                                horizontalAlignment: Text.AlignHCenter
+                                            }
+
+                                            Label {
+                                                Layout.preferredWidth: 54
+                                                Layout.alignment: Qt.AlignVCenter
+                                                text: "DURATION"
+                                                font.family: bodyFont
+                                                font.pixelSize: 11
+                                                font.weight: Font.DemiBold
+                                                color: silverDim
+                                                horizontalAlignment: Text.AlignRight
+                                            }
+
+                                            Label {
+                                                Layout.preferredWidth: 68
+                                                Layout.alignment: Qt.AlignVCenter
+                                                text: "ACTIONS"
+                                                font.family: bodyFont
+                                                font.pixelSize: 11
+                                                font.weight: Font.DemiBold
+                                                color: silverDim
+                                                horizontalAlignment: Text.AlignHCenter
+                                            }
+                                        }
+
+                                        // Baseline hairline
+                                        Rectangle {
+                                            anchors.bottom: parent.bottom
+                                            anchors.left: parent.left
+                                            anchors.leftMargin: 16
+                                            anchors.right: parent.right
+                                            anchors.rightMargin: 16
+                                            height: 1
+                                            color: borderSubtle
+                                            opacity: 0.6
+                                        }
+                                    }
+
                                     // Results List
                                     ListView {
                                         id: resultsList
@@ -924,52 +1082,76 @@ ApplicationWindow {
                                         clip: true
                                         spacing: 4
                                         model: window.searchResults
+                                        boundsBehavior: Flickable.StopAtBounds
 
                                         delegate: Rectangle {
                                             required property var modelData
                                             required property int index
                                             width: resultsList.width
-                                            height: 54
-                                            radius: 10
-                                            color: rowMouse.containsMouse ? surfaceElevated : "transparent"
+                                            height: 52
+                                            radius: 8
+                                            color: rowMouse.containsMouse ? surfaceElevated : (index % 2 === 1 ? Qt.rgba(255, 255, 255, 0.015) : "transparent")
+                                            border.width: rowMouse.containsMouse ? 1 : 0
+                                            border.color: borderSubtle
+
+                                            Behavior on color { ColorAnimation { duration: 100 } }
 
                                             RowLayout {
                                                 anchors.fill: parent
-                                                anchors.leftMargin: 14
-                                                anchors.rightMargin: 14
+                                                anchors.leftMargin: 16
+                                                anchors.rightMargin: 16
                                                 spacing: 12
 
+                                                // Index number
                                                 Label {
-                                                    Layout.preferredWidth: 24
+                                                    Layout.preferredWidth: 28
                                                     text: String(index + 1)
-                                                    font.family: monoFont
-                                                    font.pixelSize: 11
+                                                    font.family: bodyFont
+                                                    font.pixelSize: 12
                                                     color: silverDim
                                                     horizontalAlignment: Text.AlignRight
+                                                    Layout.alignment: Qt.AlignVCenter
                                                 }
 
+                                                // Artwork thumbnail with fallback icon
                                                 Rectangle {
                                                     Layout.preferredWidth: 38
                                                     Layout.preferredHeight: 38
-                                                    radius: 8
+                                                    radius: 6
                                                     clip: true
                                                     color: surfaceElevated
+                                                    border.width: 1
+                                                    border.color: borderSubtle
+                                                    Layout.alignment: Qt.AlignVCenter
+
+                                                    LucideIcon {
+                                                        anchors.centerIn: parent
+                                                        width: 16
+                                                        height: 16
+                                                        icon: "music"
+                                                        color: textMuted
+                                                        visible: !rowArtImg.visible || rowArtImg.status !== Image.Ready
+                                                    }
 
                                                     Image {
+                                                        id: rowArtImg
                                                         anchors.fill: parent
                                                         source: modelData.cover_url || ""
                                                         fillMode: Image.PreserveAspectCrop
+                                                        visible: status === Image.Ready && source.toString().length > 0
                                                     }
                                                 }
 
+                                                // Title & Artist
                                                 ColumnLayout {
                                                     Layout.fillWidth: true
+                                                    Layout.alignment: Qt.AlignVCenter
                                                     spacing: 2
 
                                                     Label {
                                                         Layout.fillWidth: true
                                                         text: modelData.title || "Unknown Track"
-                                                        font.family: displayFont
+                                                        font.family: bodyFont
                                                         font.pixelSize: 13
                                                         font.weight: Font.DemiBold
                                                         color: textPrimary
@@ -978,44 +1160,54 @@ ApplicationWindow {
 
                                                     Label {
                                                         Layout.fillWidth: true
-                                                        text: (modelData.artist || "Unknown Artist") + (modelData.album ? " • " + modelData.album : "")
+                                                        text: modelData.artist || "Unknown Artist"
                                                         font.family: bodyFont
-                                                        font.pixelSize: 11
+                                                        font.pixelSize: 12
                                                         color: textSecondary
                                                         elide: Text.ElideRight
                                                     }
                                                 }
 
-                                                // Service Tag Pill
-                                                Rectangle {
-                                                    Layout.preferredHeight: 20
-                                                    Layout.preferredWidth: sTagLabel.implicitWidth + 12
-                                                    radius: 4
-                                                    color: surfaceTag
-                                                    border.width: 1
-                                                    border.color: borderSubtle
+                                                // Album
+                                                Label {
+                                                    Layout.preferredWidth: 180
+                                                    Layout.alignment: Qt.AlignVCenter
+                                                    text: modelData.album || "—"
+                                                    font.family: bodyFont
+                                                    font.pixelSize: 12
+                                                    color: textSecondary
+                                                    elide: Text.ElideRight
+                                                }
 
-                                                    Label {
-                                                        id: sTagLabel
+                                                // Service Tag Pill (subtle, clean, no border)
+                                                Item {
+                                                    Layout.preferredWidth: 80
+                                                    Layout.preferredHeight: 22
+                                                    Layout.alignment: Qt.AlignVCenter
+
+                                                    Rectangle {
                                                         anchors.centerIn: parent
-                                                        text: (modelData.service || "source").toUpperCase()
-                                                        font.family: monoFont
-                                                        font.pixelSize: 9
-                                                        font.weight: Font.Bold
-                                                        color: {
-                                                            const s = (modelData.service || "").toLowerCase()
-                                                            if (s === "spotify") return "#1DB954"
-                                                            if (s === "apple") return "#FC3C44"
-                                                            if (s === "youtube") return "#FF4444"
-                                                            if (s === "deezer") return "#A238FF"
-                                                            return silverDim
+                                                        height: 20
+                                                        width: sTagLabel.implicitWidth + 12
+                                                        radius: 4
+                                                        color: surfaceTag
+
+                                                        Label {
+                                                            id: sTagLabel
+                                                            anchors.centerIn: parent
+                                                            text: window.formatServiceName(modelData.service)
+                                                            font.family: bodyFont
+                                                            font.pixelSize: 11
+                                                            font.weight: Font.Normal
+                                                            color: textSecondary
                                                         }
                                                     }
                                                 }
 
                                                 // Duration
                                                 Label {
-                                                    Layout.preferredWidth: 44
+                                                    Layout.preferredWidth: 54
+                                                    Layout.alignment: Qt.AlignVCenter
                                                     text: {
                                                         const d = modelData.duration || 0
                                                         if (!d) return "--:--"
@@ -1023,25 +1215,67 @@ ApplicationWindow {
                                                         const secs = d % 60
                                                         return mins + ":" + (secs < 10 ? "0" : "") + secs
                                                     }
-                                                    font.family: monoFont
-                                                    font.pixelSize: 11
+                                                    font.family: bodyFont
+                                                    font.pixelSize: 12
                                                     color: silverDim
                                                     horizontalAlignment: Text.AlignRight
                                                 }
 
-                                                // Download action (PressDepthIconButton from main app)
-                                                PressDepthIconButton {
-                                                    boxSize: 32
-                                                    iconSize: 14
-                                                    iconName: "arrow-down"
-                                                    tint: textPrimary
-                                                    hoverTint: "#FFFFFF"
-                                                    hoverBackgroundColor: recordRed
-                                                    tooltipText: "Download track"
-                                                    onClicked: {
-                                                        if (downloaderBridge) {
-                                                            downloaderBridge.downloadTrack(modelData)
-                                                            window.page = "queue"
+                                                // Actions Row (Flat, borderless quiet icons)
+                                                Item {
+                                                    Layout.preferredWidth: 68
+                                                    Layout.preferredHeight: 32
+                                                    Layout.alignment: Qt.AlignVCenter
+
+                                                    RowLayout {
+                                                        anchors.centerIn: parent
+                                                        spacing: 4
+
+                                                        PressDepthIconButton {
+                                                            Layout.preferredWidth: 28
+                                                            Layout.preferredHeight: 28
+                                                            Layout.alignment: Qt.AlignVCenter
+                                                            boxSize: 28
+                                                            iconSize: 13
+                                                            cornerRadius: 6
+                                                            backgroundColor: "transparent"
+                                                            borderColor: "transparent"
+                                                            hoverBackgroundColor: surfaceElevated
+                                                            hoverBorderColor: "transparent"
+                                                            iconName: (downloaderBridge && downloaderBridge.previewPlaying && downloaderBridge.currentPreviewPath === (modelData.preview_url || "")) ? "pause" : "play"
+                                                            tint: (modelData.preview_url && modelData.preview_url.length > 0) ? silverDim : textMuted
+                                                            hoverTint: textPrimary
+                                                            enabled: !!(modelData.preview_url && modelData.preview_url.length > 0)
+                                                            opacity: enabled ? 1.0 : 0.35
+                                                            tooltipText: enabled ? "Preview audio snippet" : "No preview available"
+                                                            onClicked: {
+                                                                if (downloaderBridge && modelData.preview_url) {
+                                                                    downloaderBridge.togglePreview(modelData.preview_url, modelData)
+                                                                }
+                                                            }
+                                                        }
+
+                                                        PressDepthIconButton {
+                                                            Layout.preferredWidth: 28
+                                                            Layout.preferredHeight: 28
+                                                            Layout.alignment: Qt.AlignVCenter
+                                                            boxSize: 28
+                                                            iconSize: 13
+                                                            cornerRadius: 6
+                                                            backgroundColor: "transparent"
+                                                            borderColor: "transparent"
+                                                            hoverBackgroundColor: brandAccent
+                                                            hoverBorderColor: "transparent"
+                                                            iconName: "arrow-down"
+                                                            tint: silverDim
+                                                            hoverTint: "#FFFFFF"
+                                                            tooltipText: "Download track"
+                                                            onClicked: {
+                                                                if (downloaderBridge) {
+                                                                    downloaderBridge.downloadTrack(modelData)
+                                                                    window.page = "queue"
+                                                                }
+                                                            }
                                                         }
                                                     }
                                                 }
@@ -1061,28 +1295,95 @@ ApplicationWindow {
                     }
 
                     Item {
+                        id: queuePageItem
+
                         ColumnLayout {
                             anchors.fill: parent
                             anchors.leftMargin: 28
                             anchors.rightMargin: 28
-                            anchors.topMargin: 16
+                            anchors.topMargin: 12
                             anchors.bottomMargin: 16
                             spacing: 14
 
+                            // Header Row
                             RowLayout {
                                 Layout.fillWidth: true
+                                Layout.preferredHeight: 38
+                                spacing: 10
+
                                 Label {
-                                    text: "Active Downloads (" + window.activeJobs.length + ")"
+                                    text: "Downloads"
                                     font.family: displayFont
                                     font.pixelSize: 18
-                                    font.weight: Font.Bold
+                                    font.weight: Font.DemiBold
                                     color: textPrimary
                                 }
+
+                                // Active count badge pill
+                                Rectangle {
+                                    visible: window.activeJobs.length > 0
+                                    implicitWidth: queueCountLabel.implicitWidth + 14
+                                    implicitHeight: 20
+                                    radius: 10
+                                    color: surfaceElevated
+                                    border.width: 1
+                                    border.color: borderSubtle
+
+                                    Text {
+                                        id: queueCountLabel
+                                        anchors.centerIn: parent
+                                        text: window.activeJobs.length
+                                        font.family: monoFont
+                                        font.pixelSize: 11
+                                        font.weight: Font.Medium
+                                        color: silverDim
+                                    }
+                                }
+
                                 Item { Layout.fillWidth: true }
 
+                                // Open Download Folder
                                 SettingButton {
-                                    visible: window.activeJobs.length > 0
-                                    text: "Clear Completed"
+                                    text: "Open Folder"
+                                    iconName: "folder"
+                                    onClicked: if (downloaderBridge) downloaderBridge.openDownloadFolder()
+                                }
+
+                                // Cancel All (visible when 2 or more active jobs)
+                                SettingButton {
+                                    visible: {
+                                        var activeCount = 0
+                                        for (var i = 0; i < window.activeJobs.length; i++) {
+                                            var s = window.activeJobs[i].status
+                                            if (s !== "Completed" && s !== "Failed" && s !== "Cancelled") {
+                                                activeCount++
+                                            }
+                                        }
+                                        return activeCount > 1
+                                    }
+                                    text: "Cancel All"
+                                    iconName: "x"
+                                    destructive: true
+                                    onClicked: {
+                                        if (downloaderBridge) {
+                                            downloaderBridge.cancelAll()
+                                            window.activeJobs = downloaderBridge.getActiveJobs()
+                                        }
+                                    }
+                                }
+
+                                // Clear Finished (visible when any completed, failed, or cancelled jobs exist)
+                                SettingButton {
+                                    visible: {
+                                        for (var i = 0; i < window.activeJobs.length; i++) {
+                                            var s = window.activeJobs[i].status
+                                            if (s === "Completed" || s === "Failed" || s === "Cancelled") {
+                                                return true
+                                            }
+                                        }
+                                        return false
+                                    }
+                                    text: "Clear Finished"
                                     iconName: "x"
                                     onClicked: {
                                         if (downloaderBridge) {
@@ -1093,7 +1394,7 @@ ApplicationWindow {
                                 }
                             }
 
-                            // Empty Queue
+                            // Empty Queue State
                             Rectangle {
                                 visible: window.activeJobs.length === 0
                                 Layout.fillWidth: true
@@ -1102,28 +1403,41 @@ ApplicationWindow {
 
                                 ColumnLayout {
                                     anchors.centerIn: parent
-                                    spacing: 10
+                                    spacing: 12
+
                                     LucideIcon {
                                         Layout.alignment: Qt.AlignHCenter
-                                        width: 36
-                                        height: 36
-                                        icon: "clock"
-                                        color: silverDim
+                                        Layout.preferredWidth: 38
+                                        Layout.preferredHeight: 38
+                                        icon: "download"
+                                        color: textSecondary
                                     }
+
                                     Label {
                                         Layout.alignment: Qt.AlignHCenter
-                                        text: "No active downloads in queue"
+                                        text: "No downloads in queue"
                                         font.family: displayFont
                                         font.pixelSize: 16
-                                        font.weight: Font.Bold
+                                        font.weight: Font.DemiBold
                                         color: textPrimary
                                     }
+
                                     Label {
                                         Layout.alignment: Qt.AlignHCenter
-                                        text: "Search or paste any music link in Explore to grab tracks"
+                                        text: "Search or paste any track or album link in Explore to grab music"
                                         font.family: bodyFont
                                         font.pixelSize: 12
                                         color: silverDim
+                                    }
+
+                                    Item { Layout.preferredHeight: 4 }
+
+                                    SettingButton {
+                                        Layout.alignment: Qt.AlignHCenter
+                                        text: "Go to Explore"
+                                        iconName: "search"
+                                        primary: true
+                                        onClicked: window.page = "explore"
                                     }
                                 }
                             }
@@ -1139,95 +1453,239 @@ ApplicationWindow {
                                 model: window.activeJobs
 
                                 delegate: Rectangle {
+                                    id: queueItemRect
                                     required property var modelData
                                     width: queueList.width
-                                    height: 68
-                                    radius: 10
-                                    color: surfaceCard
+                                    height: 64
+                                    radius: 8
+                                    color: itemMouseArea.containsMouse ? surfaceCardHover : surfaceCard
                                     border.width: 1
-                                    border.color: borderSubtle
+                                    border.color: itemMouseArea.containsMouse ? borderVariant : borderSubtle
+
+                                    Behavior on color { ColorAnimation { duration: 120 } }
+                                    Behavior on border.color { ColorAnimation { duration: 120 } }
+
+                                    MouseArea {
+                                        id: itemMouseArea
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        acceptedButtons: Qt.NoButton
+                                    }
 
                                     RowLayout {
                                         anchors.fill: parent
-                                        anchors.margins: 12
-                                        spacing: 14
+                                        anchors.leftMargin: 12
+                                        anchors.rightMargin: 12
+                                        anchors.topMargin: 10
+                                        anchors.bottomMargin: 10
+                                        spacing: 12
 
+                                        // Cover Art Thumbnail with Fallback
                                         Rectangle {
                                             Layout.preferredWidth: 44
                                             Layout.preferredHeight: 44
                                             radius: 6
                                             clip: true
                                             color: surfaceElevated
+                                            border.width: 1
+                                            border.color: borderSubtle
+
+                                            LucideIcon {
+                                                anchors.centerIn: parent
+                                                width: 18
+                                                height: 18
+                                                icon: "music"
+                                                color: silverDim
+                                            }
 
                                             Image {
                                                 anchors.fill: parent
                                                 source: modelData.cover_url || ""
                                                 fillMode: Image.PreserveAspectCrop
+                                                asynchronous: true
+                                                visible: status === Image.Ready
                                             }
                                         }
 
+                                        // Central Info Column
                                         ColumnLayout {
                                             Layout.fillWidth: true
                                             spacing: 4
 
+                                            // Row 1: Title + Speed/ETA / Status indicator
                                             RowLayout {
                                                 Layout.fillWidth: true
+                                                spacing: 8
+
                                                 Label {
                                                     Layout.fillWidth: true
-                                                    text: modelData.title || "Downloading track"
+                                                    text: modelData.title || "Track"
                                                     font.family: displayFont
                                                     font.pixelSize: 13
-                                                    font.weight: Font.Bold
+                                                    font.weight: Font.DemiBold
                                                     color: textPrimary
                                                     elide: Text.ElideRight
                                                 }
+
+                                                // Speed & ETA (only when actively downloading)
                                                 Label {
-                                                    text: modelData.speed ? (modelData.speed + (modelData.eta ? " • ETA " + modelData.eta : "")) : ""
+                                                    visible: {
+                                                        var s = modelData.status
+                                                        return s !== "Completed" && s !== "Failed" && s !== "Cancelled" && !!modelData.speed
+                                                    }
+                                                    text: modelData.speed + (modelData.eta ? " • ETA " + modelData.eta : "")
                                                     font.family: monoFont
                                                     font.pixelSize: 10
                                                     color: silverDim
                                                 }
                                             }
 
-                                            // Progress Bar
+                                            // Row 2: Slender Progress Bar
                                             Rectangle {
                                                 Layout.fillWidth: true
-                                                Layout.preferredHeight: 4
-                                                radius: 2
+                                                Layout.preferredHeight: 3
+                                                radius: 1.5
                                                 color: surfaceElevated
 
                                                 Rectangle {
-                                                    width: parent.width * Math.max(0.02, Math.min(1.0, (modelData.percent || 0) / 100))
+                                                    id: progressFill
+                                                    width: parent.width * Math.max(0.0, Math.min(1.0, (modelData.percent || 0) / 100))
                                                     height: parent.height
-                                                    radius: 2
-                                                    color: modelData.status === "Failed" ? danger : (modelData.status === "Completed" ? success : recordRed)
+                                                    radius: 1.5
+                                                    color: {
+                                                        var s = modelData.status
+                                                        if (s === "Completed") return success
+                                                        if (s === "Failed" || s === "Cancelled") return danger
+                                                        return recordRed
+                                                    }
+                                                    Behavior on width { NumberAnimation { duration: 150 } }
                                                 }
                                             }
 
+                                            // Row 3: Artist & Album + Status Badge
                                             RowLayout {
                                                 Layout.fillWidth: true
+                                                spacing: 8
+
                                                 Label {
-                                                    text: modelData.artist || ""
+                                                    Layout.fillWidth: true
+                                                    text: (modelData.artist || "Unknown Artist") + (modelData.album ? " — " + modelData.album : "")
                                                     font.family: bodyFont
                                                     font.pixelSize: 11
                                                     color: textSecondary
+                                                    elide: Text.ElideRight
                                                 }
-                                                Item { Layout.fillWidth: true }
-                                                Label {
-                                                    text: modelData.status || "Queued"
-                                                    font.family: monoFont
-                                                    font.pixelSize: 10
-                                                    color: modelData.status === "Completed" ? success : (modelData.status === "Failed" ? danger : textSecondary)
+
+                                                // Status badge pill
+                                                Rectangle {
+                                                    implicitWidth: statusText.implicitWidth + 12
+                                                    implicitHeight: 18
+                                                    radius: 9
+                                                    color: {
+                                                        var s = modelData.status
+                                                        if (s === "Completed") return Qt.alpha(success, 0.15)
+                                                        if (s === "Failed") return Qt.alpha(danger, 0.15)
+                                                        if (s === "Cancelled") return surfaceElevated
+                                                        if (s === "Queued") return surfaceElevated
+                                                        return Qt.alpha(recordRed, 0.15)
+                                                    }
+                                                    border.width: 1
+                                                    border.color: {
+                                                        var s = modelData.status
+                                                        if (s === "Completed") return Qt.alpha(success, 0.3)
+                                                        if (s === "Failed") return Qt.alpha(danger, 0.3)
+                                                        if (s === "Cancelled") return borderSubtle
+                                                        if (s === "Queued") return borderSubtle
+                                                        return Qt.alpha(recordRed, 0.3)
+                                                    }
+
+                                                    Text {
+                                                        id: statusText
+                                                        anchors.centerIn: parent
+                                                        text: {
+                                                            var s = modelData.status
+                                                            if (s === "Completed") return "Complete"
+                                                            if (s === "Failed") return "Failed"
+                                                            if (s === "Cancelled") return "Cancelled"
+                                                            if (s === "Queued") return "Queued"
+                                                            if (s === "Converting audio...") return "Converting"
+                                                            return Math.round(modelData.percent || 0) + "%"
+                                                        }
+                                                        font.family: monoFont
+                                                        font.pixelSize: 10
+                                                        font.weight: Font.Medium
+                                                        color: {
+                                                            var s = modelData.status
+                                                            if (s === "Completed") return success
+                                                            if (s === "Failed") return danger
+                                                            if (s === "Cancelled" || s === "Queued") return silverDim
+                                                            return recordRed
+                                                        }
+                                                    }
                                                 }
                                             }
                                         }
 
-                                        PressDepthIconButton {
-                                            boxSize: 28
-                                            iconSize: 12
-                                            iconName: "x"
-                                            tooltipText: "Cancel download"
-                                            onClicked: if (downloaderBridge && modelData.id) downloaderBridge.cancelJob(modelData.id)
+                                        // Actions column with fixed width so progress bars and status pills align uniformly across cards
+                                        Item {
+                                            Layout.preferredWidth: 102
+                                            Layout.fillHeight: true
+
+                                            RowLayout {
+                                                anchors.right: parent.right
+                                                anchors.verticalCenter: parent.verticalCenter
+                                                spacing: 6
+
+                                                // Completed actions: Play preview & Show in folder
+                                                PressDepthIconButton {
+                                                    visible: modelData.status === "Completed" && !!modelData.file_path
+                                                    boxSize: 30
+                                                    iconSize: 13
+                                                    iconName: (downloaderBridge && downloaderBridge.previewPlaying && downloaderBridge.currentPreviewPath === modelData.file_path) ? "pause" : "play"
+                                                    tooltipText: (downloaderBridge && downloaderBridge.previewPlaying && downloaderBridge.currentPreviewPath === modelData.file_path) ? "Pause audio" : "Play audio"
+                                                    onClicked: {
+                                                        if (downloaderBridge && modelData.file_path) {
+                                                            downloaderBridge.togglePreview(modelData.file_path, {
+                                                                "title": modelData.title,
+                                                                "artist": modelData.artist,
+                                                                "path": modelData.file_path,
+                                                                "cover_path": ""
+                                                            })
+                                                        }
+                                                    }
+                                                }
+
+                                                PressDepthIconButton {
+                                                    visible: modelData.status === "Completed" && !!modelData.file_path
+                                                    boxSize: 30
+                                                    iconSize: 13
+                                                    iconName: "folder"
+                                                    tooltipText: "Show in folder"
+                                                    onClicked: {
+                                                        if (downloaderBridge && modelData.file_path) {
+                                                            downloaderBridge.revealFileInExplorer(modelData.file_path)
+                                                        }
+                                                    }
+                                                }
+
+                                                // Cancel button (active jobs) or Dismiss button (completed/failed/cancelled)
+                                                PressDepthIconButton {
+                                                    boxSize: 30
+                                                    iconSize: 12
+                                                    iconName: "x"
+                                                    tooltipText: {
+                                                        var s = modelData.status
+                                                        if (s === "Completed" || s === "Failed" || s === "Cancelled") return "Remove from list"
+                                                        return "Cancel download"
+                                                    }
+                                                    onClicked: {
+                                                        if (downloaderBridge && modelData.id) {
+                                                            downloaderBridge.dismissJob(modelData.id)
+                                                            window.activeJobs = downloaderBridge.getActiveJobs()
+                                                        }
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -1235,30 +1693,61 @@ ApplicationWindow {
                         }
                     }
 
+                    // =========================================================
+                    // PAGE 3: LIBRARY
+                    // =========================================================
                     Item {
+                        id: libraryPageItem
+
                         ColumnLayout {
                             anchors.fill: parent
                             anchors.leftMargin: 28
                             anchors.rightMargin: 28
-                            anchors.topMargin: 16
+                            anchors.topMargin: 12
                             anchors.bottomMargin: 16
                             spacing: 14
 
+                            // Header Row
                             RowLayout {
                                 Layout.fillWidth: true
+                                Layout.preferredHeight: 38
+                                spacing: 10
+
                                 Label {
-                                    text: "GrabSongs Library (" + window.downloadedFiles.length + " songs)"
+                                    text: "Library"
                                     font.family: displayFont
                                     font.pixelSize: 18
-                                    font.weight: Font.Bold
+                                    font.weight: Font.DemiBold
                                     color: textPrimary
                                 }
+
+                                // Song count badge pill
+                                Rectangle {
+                                    visible: window.downloadedFiles.length > 0
+                                    implicitWidth: libCountLabel.implicitWidth + 14
+                                    implicitHeight: 20
+                                    radius: 10
+                                    color: surfaceElevated
+                                    border.width: 1
+                                    border.color: borderSubtle
+
+                                    Text {
+                                        id: libCountLabel
+                                        anchors.centerIn: parent
+                                        text: window.downloadedFiles.length
+                                        font.family: monoFont
+                                        font.pixelSize: 11
+                                        font.weight: Font.Medium
+                                        color: silverDim
+                                    }
+                                }
+
                                 Item { Layout.fillWidth: true }
 
                                 // View Mode Toggle (Grid / List)
                                 Rectangle {
-                                    Layout.preferredHeight: 28
-                                    Layout.preferredWidth: 64
+                                    Layout.preferredHeight: 30
+                                    Layout.preferredWidth: 68
                                     radius: 6
                                     color: surfaceCard
                                     border.width: 1
@@ -1266,19 +1755,23 @@ ApplicationWindow {
 
                                     RowLayout {
                                         anchors.fill: parent
-                                        spacing: 0
+                                        anchors.margins: 2
+                                        spacing: 2
 
                                         Rectangle {
                                             Layout.fillWidth: true
                                             Layout.fillHeight: true
-                                            radius: 6
+                                            radius: 4
                                             color: window.libraryViewMode === "grid" ? surfaceElevated : "transparent"
+                                            border.width: window.libraryViewMode === "grid" ? 1 : 0
+                                            border.color: borderVariant
+
                                             LucideIcon {
                                                 anchors.centerIn: parent
                                                 width: 14
                                                 height: 14
                                                 icon: "grid-2x2"
-                                                color: window.libraryViewMode === "grid" ? textPrimary : silverDim
+                                                color: window.libraryViewMode === "grid" ? textPrimary : textSecondary
                                             }
                                             MouseArea {
                                                 anchors.fill: parent
@@ -1290,14 +1783,17 @@ ApplicationWindow {
                                         Rectangle {
                                             Layout.fillWidth: true
                                             Layout.fillHeight: true
-                                            radius: 6
+                                            radius: 4
                                             color: window.libraryViewMode === "list" ? surfaceElevated : "transparent"
+                                            border.width: window.libraryViewMode === "list" ? 1 : 0
+                                            border.color: borderVariant
+
                                             LucideIcon {
                                                 anchors.centerIn: parent
                                                 width: 14
                                                 height: 14
                                                 icon: "list"
-                                                color: window.libraryViewMode === "list" ? textPrimary : silverDim
+                                                color: window.libraryViewMode === "list" ? textPrimary : textSecondary
                                             }
                                             MouseArea {
                                                 anchors.fill: parent
@@ -1315,7 +1811,7 @@ ApplicationWindow {
                                 }
                             }
 
-                            // Empty State
+                            // Empty Library State
                             Rectangle {
                                 visible: window.downloadedFiles.length === 0
                                 Layout.fillWidth: true
@@ -1324,60 +1820,84 @@ ApplicationWindow {
 
                                 ColumnLayout {
                                     anchors.centerIn: parent
-                                    spacing: 10
+                                    spacing: 12
+
                                     LucideIcon {
                                         Layout.alignment: Qt.AlignHCenter
-                                        width: 36
-                                        height: 36
+                                        Layout.preferredWidth: 38
+                                        Layout.preferredHeight: 38
                                         icon: "disc"
-                                        color: silverDim
+                                        color: textSecondary
                                     }
+
                                     Label {
                                         Layout.alignment: Qt.AlignHCenter
-                                        text: "GrabSongs library is empty"
+                                        text: "No downloaded songs in library"
                                         font.family: displayFont
                                         font.pixelSize: 16
-                                        font.weight: Font.Bold
+                                        font.weight: Font.DemiBold
                                         color: textPrimary
                                     }
+
                                     Label {
                                         Layout.alignment: Qt.AlignHCenter
-                                        text: "Downloaded songs will automatically show up here"
+                                        text: "Grab any track or album in Explore to start your offline library"
                                         font.family: bodyFont
                                         font.pixelSize: 12
                                         color: silverDim
                                     }
+
+                                    Item { Layout.preferredHeight: 4 }
+
+                                    SettingButton {
+                                        Layout.alignment: Qt.AlignHCenter
+                                        text: "Go to Explore"
+                                        iconName: "search"
+                                        primary: true
+                                        onClicked: window.page = "explore"
+                                    }
                                 }
                             }
 
-                            // Grid View (SongCard style)
+                            // Grid View
                             GridView {
                                 id: libGrid
                                 visible: window.downloadedFiles.length > 0 && window.libraryViewMode === "grid"
                                 Layout.fillWidth: true
                                 Layout.fillHeight: true
                                 clip: true
-                                cellWidth: 160
-                                cellHeight: 220
+                                cellWidth: 172
+                                cellHeight: 236
                                 model: window.downloadedFiles
 
-                                delegate: Item {
+                                delegate: Rectangle {
+                                    id: gridCard
                                     required property var modelData
-                                    width: 150
-                                    height: 210
+                                    width: 160
+                                    height: 232
+                                    radius: 8
+                                    color: cardM.containsMouse ? surfaceCardHover : surfaceCard
+                                    border.width: 1
+                                    border.color: (downloaderBridge && downloaderBridge.currentPreviewPath === modelData.path) ? recordRed : (cardM.containsMouse ? borderVariant : borderSubtle)
+
+                                    Behavior on color { ColorAnimation { duration: 120 } }
+                                    Behavior on border.color { ColorAnimation { duration: 120 } }
 
                                     ColumnLayout {
                                         anchors.fill: parent
+                                        anchors.margins: 10
                                         spacing: 8
 
+                                        // Artwork Container
                                         Rectangle {
-                                            Layout.preferredWidth: 144
-                                            Layout.preferredHeight: 144
-                                            radius: 10
+                                            Layout.preferredWidth: 140
+                                            Layout.preferredHeight: 140
+                                            Layout.alignment: Qt.AlignHCenter
+                                            radius: 6
                                             clip: true
-                                            color: surfaceCard
+                                            color: surfaceElevated
                                             border.width: 1
-                                            border.color: cardM.containsMouse ? borderVariant : borderSubtle
+                                            border.color: borderSubtle
 
                                             LucideIcon {
                                                 anchors.centerIn: parent
@@ -1385,16 +1905,28 @@ ApplicationWindow {
                                                 height: 32
                                                 icon: "music"
                                                 color: silverDim
+                                                visible: !gridImg.visible || gridImg.status !== Image.Ready
                                             }
 
-                                            // Hover play button (PressDepthIconButton)
+                                            Image {
+                                                id: gridImg
+                                                anchors.fill: parent
+                                                source: modelData.cover_url || ""
+                                                fillMode: Image.PreserveAspectCrop
+                                                asynchronous: true
+                                                visible: status === Image.Ready && source.toString().length > 0
+                                            }
+
+                                            // Play/Pause Overlay Button on hover or playing
                                             Rectangle {
                                                 visible: cardM.containsMouse || (downloaderBridge && downloaderBridge.currentPreviewPath === modelData.path)
                                                 anchors.centerIn: parent
-                                                width: 40
-                                                height: 40
-                                                radius: 20
-                                                color: recordRed
+                                                width: 38
+                                                height: 38
+                                                radius: 19
+                                                color: (downloaderBridge && downloaderBridge.currentPreviewPath === modelData.path && downloaderBridge.previewPlaying) ? recordRed : Qt.rgba(0, 0, 0, 0.72)
+                                                border.width: 1
+                                                border.color: Qt.rgba(255, 255, 255, 0.15)
 
                                                 LucideIcon {
                                                     anchors.centerIn: parent
@@ -1404,73 +1936,9 @@ ApplicationWindow {
                                                     color: "#FFFFFF"
                                                 }
                                             }
-
-                                            MouseArea {
-                                                id: cardM
-                                                anchors.fill: parent
-                                                hoverEnabled: true
-                                                cursorShape: Qt.PointingHandCursor
-                                                onClicked: {
-                                                    if (downloaderBridge) downloaderBridge.togglePreview(modelData.path)
-                                                }
-                                            }
                                         }
 
-                                        Label {
-                                            Layout.fillWidth: true
-                                            text: modelData.title || modelData.filename
-                                            font.family: displayFont
-                                            font.pixelSize: 13
-                                            font.weight: Font.DemiBold
-                                            color: (downloaderBridge && downloaderBridge.currentPreviewPath === modelData.path) ? recordRed : textPrimary
-                                            elide: Text.ElideRight
-                                        }
-
-                                        Label {
-                                            Layout.fillWidth: true
-                                            text: modelData.artist || "GrabSongs"
-                                            font.family: bodyFont
-                                            font.pixelSize: 11
-                                            color: textSecondary
-                                            elide: Text.ElideRight
-                                        }
-                                    }
-                                }
-                            }
-
-                            // List View (SongRow style)
-                            ListView {
-                                id: libList
-                                visible: window.downloadedFiles.length > 0 && window.libraryViewMode === "list"
-                                Layout.fillWidth: true
-                                Layout.fillHeight: true
-                                clip: true
-                                spacing: 4
-                                model: window.downloadedFiles
-
-                                delegate: Rectangle {
-                                    required property var modelData
-                                    width: libList.width
-                                    height: 52
-                                    radius: 8
-                                    color: lRowM.containsMouse ? surfaceElevated : "transparent"
-
-                                    RowLayout {
-                                        anchors.fill: parent
-                                        anchors.leftMargin: 12
-                                        anchors.rightMargin: 12
-                                        spacing: 12
-
-                                        // Play / Pause Icon Button
-                                        PressDepthIconButton {
-                                            boxSize: 32
-                                            iconSize: 14
-                                            iconName: (downloaderBridge && downloaderBridge.previewPlaying && downloaderBridge.currentPreviewPath === modelData.path) ? "pause" : "play"
-                                            highlighted: (downloaderBridge && downloaderBridge.currentPreviewPath === modelData.path)
-                                            tooltipText: "Play / Pause"
-                                            onClicked: if (downloaderBridge) downloaderBridge.togglePreview(modelData.path)
-                                        }
-
+                                        // Details
                                         ColumnLayout {
                                             Layout.fillWidth: true
                                             spacing: 2
@@ -1487,7 +1955,7 @@ ApplicationWindow {
 
                                             Label {
                                                 Layout.fillWidth: true
-                                                text: modelData.artist || "GrabSongs"
+                                                text: modelData.artist || "Unknown Artist"
                                                 font.family: bodyFont
                                                 font.pixelSize: 11
                                                 color: textSecondary
@@ -1495,8 +1963,156 @@ ApplicationWindow {
                                             }
                                         }
 
+                                        Item { Layout.fillHeight: true }
+
+                                        // Card Footer (Size & Reveal Folder action)
+                                        RowLayout {
+                                            Layout.fillWidth: true
+                                            Layout.preferredHeight: 22
+
+                                            Label {
+                                                text: modelData.size || ""
+                                                font.family: monoFont
+                                                font.pixelSize: 10
+                                                color: silverDim
+                                            }
+
+                                            Item { Layout.fillWidth: true }
+
+                                            PressDepthIconButton {
+                                                boxSize: 22
+                                                iconSize: 12
+                                                iconName: "folder"
+                                                tooltipText: "Show in folder"
+                                                onClicked: if (downloaderBridge) downloaderBridge.revealFileInExplorer(modelData.path)
+                                            }
+                                        }
+                                    }
+
+                                    MouseArea {
+                                        id: cardM
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: {
+                                            if (downloaderBridge) {
+                                                downloaderBridge.togglePreview(modelData.path, {
+                                                    "title": modelData.title,
+                                                    "artist": modelData.artist,
+                                                    "path": modelData.path,
+                                                    "cover_path": modelData.cover_path || ""
+                                                })
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            // List View
+                            ListView {
+                                id: libList
+                                visible: window.downloadedFiles.length > 0 && window.libraryViewMode === "list"
+                                Layout.fillWidth: true
+                                Layout.fillHeight: true
+                                clip: true
+                                spacing: 6
+                                model: window.downloadedFiles
+
+                                delegate: Rectangle {
+                                    id: listCard
+                                    required property var modelData
+                                    width: libList.width
+                                    height: 56
+                                    radius: 8
+                                    color: lRowM.containsMouse ? surfaceCardHover : surfaceCard
+                                    border.width: 1
+                                    border.color: (downloaderBridge && downloaderBridge.currentPreviewPath === modelData.path) ? recordRed : (lRowM.containsMouse ? borderVariant : borderSubtle)
+
+                                    Behavior on color { ColorAnimation { duration: 120 } }
+                                    Behavior on border.color { ColorAnimation { duration: 120 } }
+
+                                    RowLayout {
+                                        anchors.fill: parent
+                                        anchors.leftMargin: 12
+                                        anchors.rightMargin: 12
+                                        spacing: 12
+
+                                        // Play / Pause Icon Button
+                                        PressDepthIconButton {
+                                            boxSize: 32
+                                            iconSize: 14
+                                            iconName: (downloaderBridge && downloaderBridge.previewPlaying && downloaderBridge.currentPreviewPath === modelData.path) ? "pause" : "play"
+                                            tint: (downloaderBridge && downloaderBridge.currentPreviewPath === modelData.path) ? recordRed : silverDim
+                                            tooltipText: "Play / Pause"
+                                            onClicked: {
+                                                if (downloaderBridge) {
+                                                    downloaderBridge.togglePreview(modelData.path, {
+                                                        "title": modelData.title,
+                                                        "artist": modelData.artist,
+                                                        "path": modelData.path,
+                                                        "cover_path": modelData.cover_path || ""
+                                                    })
+                                                }
+                                            }
+                                        }
+
+                                        // Cover Art Thumbnail
+                                        Rectangle {
+                                            Layout.preferredWidth: 38
+                                            Layout.preferredHeight: 38
+                                            radius: 6
+                                            clip: true
+                                            color: surfaceElevated
+                                            border.width: 1
+                                            border.color: borderSubtle
+
+                                            LucideIcon {
+                                                anchors.centerIn: parent
+                                                width: 16
+                                                height: 16
+                                                icon: "music"
+                                                color: silverDim
+                                                visible: !listImg.visible || listImg.status !== Image.Ready
+                                            }
+
+                                            Image {
+                                                id: listImg
+                                                anchors.fill: parent
+                                                source: modelData.cover_url || ""
+                                                fillMode: Image.PreserveAspectCrop
+                                                asynchronous: true
+                                                visible: status === Image.Ready && source.toString().length > 0
+                                            }
+                                        }
+
+                                        // Track Info Column
+                                        ColumnLayout {
+                                            Layout.fillWidth: true
+                                            spacing: 2
+
+                                            Label {
+                                                Layout.fillWidth: true
+                                                text: modelData.title || modelData.filename
+                                                font.family: displayFont
+                                                font.pixelSize: 13
+                                                font.weight: Font.DemiBold
+                                                color: (downloaderBridge && downloaderBridge.currentPreviewPath === modelData.path) ? recordRed : textPrimary
+                                                elide: Text.ElideRight
+                                            }
+
+                                            Label {
+                                                Layout.fillWidth: true
+                                                text: (modelData.artist || "Unknown Artist") + (modelData.album ? " — " + modelData.album : "")
+                                                font.family: bodyFont
+                                                font.pixelSize: 11
+                                                color: textSecondary
+                                                elide: Text.ElideRight
+                                            }
+                                        }
+
+                                        // File Size
                                         Label {
-                                            Layout.preferredWidth: 60
+                                            Layout.preferredWidth: 64
                                             text: modelData.size || ""
                                             font.family: monoFont
                                             font.pixelSize: 11
@@ -1504,21 +2120,21 @@ ApplicationWindow {
                                             horizontalAlignment: Text.AlignRight
                                         }
 
+                                        // Containerless Action Buttons
                                         PressDepthIconButton {
                                             boxSize: 30
-                                            iconSize: 14
+                                            iconSize: 13
                                             iconName: "folder"
-                                            tooltipText: "Reveal in Explorer"
+                                            tooltipText: "Show in folder"
                                             onClicked: if (downloaderBridge) downloaderBridge.revealFileInExplorer(modelData.path)
                                         }
 
                                         PressDepthIconButton {
                                             boxSize: 30
-                                            iconSize: 14
+                                            iconSize: 13
                                             iconName: "x"
                                             tooltipText: "Delete file"
-                                            hoverBackgroundColor: Qt.alpha(danger, 0.2)
-                                            hoverBorderColor: danger
+                                            hoverTint: danger
                                             onClicked: if (downloaderBridge) downloaderBridge.deleteFile(modelData.path)
                                         }
                                     }
@@ -1534,110 +2150,335 @@ ApplicationWindow {
                         }
                     }
 
+                    // =========================================================
+                    // PAGE 4: SETTINGS
+                    // =========================================================
                     Item {
-                        ScrollView {
+                        id: settingsPage
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+
+                        ColumnLayout {
                             anchors.fill: parent
                             anchors.leftMargin: 28
                             anchors.rightMargin: 28
-                            anchors.topMargin: 16
+                            anchors.topMargin: 12
                             anchors.bottomMargin: 16
-                            contentWidth: width
+                            spacing: 14
 
-                            ColumnLayout {
-                                width: parent.width
-                                spacing: 18
+                            // Standard Page Header Row
+                            RowLayout {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 40
+                                spacing: 12
 
                                 Label {
-                                    text: "Downloader Preferences"
+                                    text: "Settings"
                                     font.family: displayFont
-                                    font.pixelSize: 18
-                                    font.weight: Font.Bold
+                                    font.pixelSize: 20
+                                    font.weight: Font.DemiBold
                                     color: textPrimary
                                 }
 
-                                // Card 1: Format & Quality (SettingCard)
-                                SettingCard {
-                                    SettingRow {
-                                        title: "Audio Output Format"
-                                        subtitle: "Select preferred file container for downloaded tracks"
-                                        iconName: "music"
+                                Item { Layout.fillWidth: true }
+                            }
 
-                                        Row {
-                                            spacing: 6
-                                            Repeater {
-                                                model: ["mp3", "flac", "m4a", "opus"]
-                                                FilterChip {
-                                                    required property var modelData
-                                                    text: modelData.toUpperCase()
-                                                    selected: (downloaderBridge ? downloaderBridge.audioFormat : "mp3") === modelData
-                                                    onClicked: if (downloaderBridge) downloaderBridge.setAudioFormat(modelData)
+                            // Scrollable Settings Content
+                            ScrollView {
+                                Layout.fillWidth: true
+                                Layout.fillHeight: true
+                                clip: true
+                                contentWidth: width
+
+                                ColumnLayout {
+                                    width: parent.width
+                                    spacing: 16
+
+                                    // --- SECTION 1: AUDIO QUALITY & FORMAT ---
+                                    Label {
+                                        text: "AUDIO QUALITY & FORMAT"
+                                        font.family: monoFont
+                                        font.pixelSize: 11
+                                        font.weight: Font.DemiBold
+                                        color: silverDim
+                                    }
+
+                                    SettingCard {
+                                        SettingRow {
+                                            title: "Output Format"
+                                            subtitle: "Select preferred audio encoding container"
+                                            iconName: "music"
+
+                                            Row {
+                                                spacing: 6
+                                                Repeater {
+                                                    model: ["mp3", "flac", "m4a", "opus"]
+                                                    FilterChip {
+                                                        required property var modelData
+                                                        text: modelData.toUpperCase()
+                                                        selected: (downloaderBridge ? downloaderBridge.audioFormat : "mp3") === modelData
+                                                        onClicked: if (downloaderBridge) downloaderBridge.setAudioFormat(modelData)
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                        Rectangle {
+                                            Layout.fillWidth: true
+                                            height: 1
+                                            color: borderSubtle
+                                            opacity: 0.6
+                                        }
+
+                                        SettingRow {
+                                            title: "Bitrate Quality"
+                                            subtitle: (downloaderBridge && downloaderBridge.audioFormat === "flac")
+                                                ? "Lossless bit-perfect preservation (Bitrate selection not applicable to FLAC)"
+                                                : "Constant target bitrate for lossy compression"
+                                            iconName: "audio-lines"
+
+                                            Row {
+                                                spacing: 6
+                                                visible: !(downloaderBridge && downloaderBridge.audioFormat === "flac")
+                                                Repeater {
+                                                    model: [
+                                                        { id: "320", label: "320 kbps (High)" },
+                                                        { id: "256", label: "256 kbps (Standard)" },
+                                                        { id: "192", label: "192 kbps (Compact)" }
+                                                    ]
+                                                    FilterChip {
+                                                        required property var modelData
+                                                        text: modelData.label
+                                                        selected: (downloaderBridge ? downloaderBridge.audioQuality : "320") === modelData.id
+                                                        onClicked: if (downloaderBridge) downloaderBridge.setAudioQuality(modelData.id)
+                                                    }
+                                                }
+                                            }
+
+                                            Label {
+                                                visible: downloaderBridge && downloaderBridge.audioFormat === "flac"
+                                                text: "Bit-Perfect Lossless"
+                                                font.family: monoFont
+                                                font.pixelSize: 11
+                                                color: recordRedHover
+                                            }
+                                        }
+
+                                        Rectangle {
+                                            Layout.fillWidth: true
+                                            height: 1
+                                            color: borderSubtle
+                                            opacity: 0.6
+                                        }
+
+                                        SettingRow {
+                                            title: "Max Concurrent Downloads"
+                                            subtitle: "Number of tracks downloaded simultaneously in queue"
+                                            iconName: "download"
+
+                                            Row {
+                                                spacing: 6
+                                                Repeater {
+                                                    model: [
+                                                        { count: 1, label: "1 Track" },
+                                                        { count: 2, label: "2 Tracks (Default)" },
+                                                        { count: 3, label: "3 Tracks" },
+                                                        { count: 4, label: "4 Tracks" }
+                                                    ]
+                                                    FilterChip {
+                                                        required property var modelData
+                                                        text: modelData.label
+                                                        selected: (downloaderBridge ? downloaderBridge.maxConcurrentDownloads : 2) === modelData.count
+                                                        onClicked: if (downloaderBridge) downloaderBridge.setMaxConcurrentDownloads(modelData.count)
+                                                    }
                                                 }
                                             }
                                         }
                                     }
 
-                                    SettingRow {
-                                        title: "Audio Bitrate Quality"
-                                        subtitle: "Constant high bitrate or lossless preservation"
-                                        iconName: "audio-lines"
+                                    // --- SECTION 2: METADATA & LYRICS ---
+                                    Label {
+                                        text: "METADATA & LYRICS"
+                                        font.family: monoFont
+                                        font.pixelSize: 11
+                                        font.weight: Font.DemiBold
+                                        color: silverDim
+                                        Layout.topMargin: 4
+                                    }
 
-                                        Row {
-                                            spacing: 6
-                                            Repeater {
-                                                model: [
-                                                    { id: "320", label: "320 kbps (High)" },
-                                                    { id: "256", label: "256 kbps" },
-                                                    { id: "192", label: "192 kbps" }
-                                                ]
-                                                FilterChip {
-                                                    required property var modelData
-                                                    text: modelData.label
-                                                    selected: (downloaderBridge ? downloaderBridge.audioQuality : "320") === modelData.id
-                                                    onClicked: if (downloaderBridge) downloaderBridge.setAudioQuality(modelData.id)
-                                                }
+                                    SettingCard {
+                                        SettingRow {
+                                            title: "LRCLIB Synced Lyrics"
+                                            subtitle: "Fetch and embed time-synchronized lyrics (.lrc) directly into audio tags"
+                                            iconName: "quote"
+
+                                            SettingSwitch {
+                                                checked: downloaderBridge ? downloaderBridge.embedLyrics : true
+                                                onToggled: if (downloaderBridge) downloaderBridge.setEmbedLyrics(checked)
+                                            }
+                                        }
+
+                                        Rectangle {
+                                            Layout.fillWidth: true
+                                            height: 1
+                                            color: borderSubtle
+                                            opacity: 0.6
+                                        }
+
+                                        SettingRow {
+                                            title: "Save Separate .lrc File"
+                                            subtitle: "Export timestamped lyrics as companion .lrc text file in folder"
+                                            iconName: "pencil"
+
+                                            SettingSwitch {
+                                                checked: downloaderBridge ? downloaderBridge.saveLrcFile : false
+                                                onToggled: if (downloaderBridge) downloaderBridge.setSaveLrcFile(checked)
+                                            }
+                                        }
+
+                                        Rectangle {
+                                            Layout.fillWidth: true
+                                            height: 1
+                                            color: borderSubtle
+                                            opacity: 0.6
+                                        }
+
+                                        SettingRow {
+                                            title: "Embed High-Res Artwork"
+                                            subtitle: "Inject album cover into ID3v2, MP4, and Vorbis metadata containers"
+                                            iconName: "disc"
+
+                                            SettingSwitch {
+                                                checked: downloaderBridge ? downloaderBridge.embedArtwork : true
+                                                onToggled: if (downloaderBridge) downloaderBridge.setEmbedArtwork(checked)
                                             }
                                         }
                                     }
-                                }
 
-                                // Card 2: Metadata & Lyrics (SettingCard)
-                                SettingCard {
-                                    SettingRow {
-                                        title: "LRCLIB Synced Lyrics"
-                                        subtitle: "Fetch and save matching synchronized lyrics (.lrc)"
-                                        iconName: "quote"
-
-                                        SettingSwitch {
-                                            checked: downloaderBridge ? downloaderBridge.embedLyrics : true
-                                            onToggled: if (downloaderBridge) downloaderBridge.setEmbedLyrics(checked)
-                                        }
+                                    // --- SECTION 3: STORAGE & DIRECTORY ---
+                                    Label {
+                                        text: "STORAGE & DIRECTORY"
+                                        font.family: monoFont
+                                        font.pixelSize: 11
+                                        font.weight: Font.DemiBold
+                                        color: silverDim
+                                        Layout.topMargin: 4
                                     }
 
-                                    SettingRow {
-                                        title: "Embed High-Res Artwork"
-                                        subtitle: "Inject album cover into ID3v2 / Vorbis metadata"
-                                        iconName: "disc"
-
-                                        SettingSwitch {
-                                            checked: downloaderBridge ? downloaderBridge.embedArtwork : true
-                                            onToggled: if (downloaderBridge) downloaderBridge.setEmbedArtwork(checked)
-                                        }
-                                    }
-                                }
-
-                                // Card 3: Download Directory (SettingCard)
-                                SettingCard {
-                                    SettingRow {
-                                        title: "GrabSongs Download Directory"
-                                        subtitle: downloaderBridge ? downloaderBridge.downloadDirectory : "Music/GrabSongs"
-                                        iconName: "folder"
-
-                                        SettingButton {
-                                            text: "Open Folder"
+                                    SettingCard {
+                                        SettingRow {
+                                            title: "Download Location"
+                                            subtitle: downloaderBridge ? downloaderBridge.downloadDirectory : "Music/GrabSongs"
                                             iconName: "folder"
-                                            onClicked: if (downloaderBridge) downloaderBridge.openDownloadFolder()
+
+                                            Row {
+                                                spacing: 8
+
+                                                SettingButton {
+                                                    text: "Change Folder..."
+                                                    iconName: "folder"
+                                                    onClicked: if (downloaderBridge) downloaderBridge.chooseDownloadDirectory()
+                                                }
+
+                                                SettingButton {
+                                                    text: "Open Folder"
+                                                    iconName: "folder"
+                                                    onClicked: if (downloaderBridge) downloaderBridge.openDownloadFolder()
+                                                }
+                                            }
                                         }
                                     }
+
+                                    // --- SECTION 4: APPEARANCE ACCENT ---
+                                    Label {
+                                        text: "APPEARANCE ACCENT"
+                                        font.family: monoFont
+                                        font.pixelSize: 11
+                                        font.weight: Font.DemiBold
+                                        color: silverDim
+                                        Layout.topMargin: 4
+                                    }
+
+                                    SettingCard {
+                                        SettingRow {
+                                            title: "Color Accent"
+                                            subtitle: "Natural warmth palette inspired by soot black, terracotta, pine, and ochre"
+                                            iconName: "sliders-horizontal"
+
+                                            Row {
+                                                spacing: 6
+                                                Repeater {
+                                                    model: [
+                                                        { id: "terracotta", name: "Terracotta", color: "#D95D39" },
+                                                        { id: "tangerine",  name: "Tangerine",  color: "#F05423" },
+                                                        { id: "pine",       name: "Pine",       color: "#3D7A5A" },
+                                                        { id: "ochre",      name: "Ochre",      color: "#C88A2E" },
+                                                        { id: "linen",      name: "Linen",      color: "#E4DFD7" }
+                                                    ]
+                                                    FilterChip {
+                                                        required property var modelData
+                                                        text: modelData.name
+                                                        swatchColor: modelData.color
+                                                        selected: window.accentName === modelData.id
+                                                        onClicked: {
+                                                            window.accentName = modelData.id
+                                                            if (downloaderBridge) downloaderBridge.setAccentName(modelData.id)
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    // --- SECTION 5: SYSTEM & ENGINE ---
+                                    Label {
+                                        text: "SYSTEM & ENGINE"
+                                        font.family: monoFont
+                                        font.pixelSize: 11
+                                        font.weight: Font.DemiBold
+                                        color: silverDim
+                                        Layout.topMargin: 4
+                                    }
+
+                                    SettingCard {
+                                        SettingRow {
+                                            title: "FFmpeg Audio Pipeline"
+                                            subtitle: (downloaderBridge && downloaderBridge.ffmpegPath.length > 0)
+                                                ? "Ready: " + downloaderBridge.ffmpegPath
+                                                : "Bundled imageio-ffmpeg pipeline active"
+                                            iconName: "zap"
+
+                                            Label {
+                                                text: "OPERATIONAL"
+                                                font.family: monoFont
+                                                font.pixelSize: 10
+                                                font.weight: Font.Bold
+                                                color: success
+                                            }
+                                        }
+
+                                        Rectangle {
+                                            Layout.fillWidth: true
+                                            height: 1
+                                            color: borderSubtle
+                                            opacity: 0.6
+                                        }
+
+                                        SettingRow {
+                                            title: "GrabSongs"
+                                            subtitle: "High-fidelity lossless and 320kbps music downloader • GPL-3.0 License"
+                                            iconName: "info"
+
+                                            Label {
+                                                text: "v2.4.0"
+                                                font.family: monoFont
+                                                font.pixelSize: 11
+                                                color: silverDim
+                                            }
+                                        }
+                                    }
+
+                                    Item { Layout.preferredHeight: 12 }
                                 }
                             }
                         }
@@ -1651,8 +2492,12 @@ ApplicationWindow {
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.bottom: parent.bottom
-            height: 88
+            visible: !!(downloaderBridge && (downloaderBridge.previewPlaying || (downloaderBridge.currentPreviewPath && downloaderBridge.currentPreviewPath.length > 0)))
+            height: visible ? 72 : 0
+            clip: true
             color: surfaceDock
+
+            Behavior on height { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
 
             // Top border
             Rectangle {
@@ -1690,6 +2535,15 @@ ApplicationWindow {
                             height: 24
                             icon: "music"
                             color: (downloaderBridge && downloaderBridge.previewPlaying) ? recordRed : silverDim
+                            visible: !dockArtImg.visible || dockArtImg.status !== Image.Ready
+                        }
+
+                        Image {
+                            id: dockArtImg
+                            anchors.fill: parent
+                            source: (downloaderBridge && downloaderBridge.currentPreviewTrack && downloaderBridge.currentPreviewTrack.cover_path) ? downloaderBridge.currentPreviewTrack.cover_path : ""
+                            fillMode: Image.PreserveAspectCrop
+                            visible: status === Image.Ready && source.toString().length > 0
                         }
                     }
 
@@ -1806,8 +2660,16 @@ ApplicationWindow {
                         boxSize: 32
                         iconSize: 16
                         iconName: "folder"
-                        tooltipText: "Open GrabSongs Folder"
+                        tooltipText: "Open Music Folder"
                         onClicked: if (downloaderBridge) downloaderBridge.openDownloadFolder()
+                    }
+
+                    PressDepthIconButton {
+                        boxSize: 32
+                        iconSize: 14
+                        iconName: "x"
+                        tooltipText: "Dismiss Preview"
+                        onClicked: if (downloaderBridge) downloaderBridge.stopPreview()
                     }
                 }
             }

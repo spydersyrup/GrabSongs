@@ -4,6 +4,7 @@ from .spotify import SpotifyMetadata
 from .apple_music import AppleMusicMetadata
 from .deezer import DeezerMetadata
 from .youtube import YouTubeMetadata
+from .generic import GenericMetadata
 from .lyrics import LyricsFetcher
 
 class MetadataResolver:
@@ -69,6 +70,12 @@ class MetadataResolver:
                 playlist = YouTubeMetadata.get_playlist(detected.get("url"))
                 if playlist:
                     return {"success": True, "service": service, "type": "playlist", "item": playlist, "tracks": playlist.get("tracks", [])}
+
+        # 5. Generic URL (SoundCloud, Bandcamp, TikTok, direct stream, etc.)
+        elif service in ("generic_url", "generic"):
+            gen_res = GenericMetadata.resolve_url(detected.get("url") or query_or_url)
+            if gen_res.get("success"):
+                return gen_res
 
         # 5. Search query (fallback / direct text search)
         search_query = detected.get("query") or query_or_url

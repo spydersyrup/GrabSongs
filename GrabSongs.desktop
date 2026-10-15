@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=GrabSongs
+Comment=Music Downloader for Spotify, Apple Music, YouTube and Web Audio
+Exec=/home/spydersyrup/Desktop/GrabSongs/run.sh
+Icon=/home/spydersyrup/Desktop/GrabSongs/assets/grabsongs_icon.png
+Path=/home/spydersyrup/Desktop/GrabSongs
+Terminal=true
+Categories=AudioVideo;Audio;

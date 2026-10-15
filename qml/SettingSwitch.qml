@@ -5,17 +5,17 @@ Rectangle {
     property bool checked: false
     signal toggled(bool checked)
 
-    implicitWidth: 46
-    implicitHeight: 26
-    radius: 13
+    implicitWidth: 40
+    implicitHeight: 22
+    radius: 11
     color: root.checked
         ? (mouseArea.containsMouse ? recordRedHover : recordRed)
-        : (mouseArea.containsMouse ? surfaceCardHover : surfaceCard)
+        : (mouseArea.containsMouse ? surfaceElevated : surfaceCard)
     opacity: root.enabled ? 1.0 : 0.4
-    border.width: root.activeFocus ? 2 : 0
+    border.width: 1
     border.color: root.activeFocus
         ? recordRedHover
-        : "transparent"
+        : (root.checked ? recordRed : borderVariant)
 
     activeFocusOnTab: true
     Accessible.role: Accessible.CheckBox
@@ -36,11 +36,11 @@ Rectangle {
 
     Rectangle {
         id: thumb
-        y: 4
-        x: root.checked ? root.width - width - 4 : 4
-        width: 18
-        height: 18
-        radius: 9
+        y: 3
+        x: root.checked ? root.width - width - 3 : 3
+        width: 14
+        height: 14
+        radius: 7
         color: root.checked
             ? "#FFFFFF"
             : (mouseArea.containsMouse ? textSecondary : silverDim)

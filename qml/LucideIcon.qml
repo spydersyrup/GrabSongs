@@ -4,7 +4,7 @@ import QtQuick.Effects
 Item {
     id: root
     property string icon: ""
-    property color color: textPrimary
+    property color color: (typeof textPrimary !== "undefined") ? textPrimary : "#F8FAFC"
     property bool preserveColor: false
 
     implicitWidth: 20
@@ -19,7 +19,6 @@ Item {
         fillMode: Image.PreserveAspectFit
         smooth: true
         visible: true
-        opacity: root.preserveColor ? 1 : 0
     }
 
     MultiEffect {

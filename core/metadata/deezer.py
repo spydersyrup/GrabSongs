@@ -40,6 +40,7 @@ class DeezerMetadata:
                 "release_date": release_date,
                 "isrc": isrc,
                 "source_url": data.get("link", f"https://www.deezer.com/track/{track_id}"),
+                "preview_url": data.get("preview", ""),
                 "search_query": f"{artist} - {title} audio"
             }
         except Exception as e:
@@ -84,6 +85,7 @@ class DeezerMetadata:
                     "release_date": release_date,
                     "genre": genre,
                     "source_url": t.get("link", ""),
+                    "preview_url": t.get("preview", ""),
                     "search_query": f"{t_artist} - {t_title} audio"
                 })
 
@@ -138,6 +140,7 @@ class DeezerMetadata:
                     "track_number": idx,
                     "disc_number": 1,
                     "source_url": t.get("link", ""),
+                    "preview_url": t.get("preview", ""),
                     "search_query": f"{t_artist} - {t_title} audio"
                 })
 
@@ -182,6 +185,7 @@ class DeezerMetadata:
                     "track_number": t.get("track_position", 1),
                     "disc_number": t.get("disk_number", 1),
                     "source_url": t.get("link", ""),
+                    "preview_url": t.get("preview", ""),
                     "search_query": f"{t_artist} - {t_title} audio"
                 })
         except Exception as e:

@@ -1,8 +1,5 @@
 @echo off
-title GrabSongs Music Downloader
+title GrabSongs
 cd /d "%~dp0"
-echo Starting GrabSongs Music Downloader Service...
-python app.py
-echo.
-echo Process exited with code %ERRORLEVEL%.
-pause
+echo Starting GrabSongs...
+python app.py %*

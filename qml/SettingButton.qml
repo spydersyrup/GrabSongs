@@ -13,26 +13,27 @@ Rectangle {
     property string accessibleName: text
     signal clicked()
 
-    readonly property color accentColor: recordRed
-    readonly property color accentHoverColor: recordRedHover
+    property color accentColor: (typeof window !== "undefined" && window.recordRed ? window.recordRed : recordRed)
+    property color accentHoverColor: (typeof window !== "undefined" && window.recordRedHover ? window.recordRedHover : recordRedHover)
 
-    implicitWidth: contentRow.implicitWidth + 22
-    implicitHeight: 32
-    radius: 8
+    implicitWidth: contentRow.implicitWidth + 20
+    implicitHeight: 28
+    radius: 6
     // A main action looks like a selected chip, with an accent border and text.
     readonly property color contentColor: root.destructive ? (mouseArea.containsMouse ? danger : Qt.alpha(danger, 0.9))
-        : root.primary ? root.accentColor
+        : root.primary ? (typeof window !== "undefined" && window.accentButtonText ? window.accentButtonText : "#FFFFFF")
         : (mouseArea.containsMouse ? textPrimary : textSecondary)
     color: {
         if (mouseArea.containsMouse) {
             if (root.destructive) return Qt.alpha(danger, 0.18)
+            if (root.primary) return root.accentHoverColor
             return surfaceElevated
         }
         if (root.destructive) return "transparent"
-        if (root.primary) return surfaceSelected
-        return surfaceInput
+        if (root.primary) return root.accentColor
+        return surfaceTag
     }
-    border.width: root.primary || root.destructive || mouseArea.containsMouse ? 1 : 0
+    border.width: 1
     border.color: {
         if (root.destructive) return Qt.alpha(danger, mouseArea.containsMouse ? 0.5 : 0.25)
         if (root.primary) return mouseArea.containsMouse ? root.accentHoverColor : root.accentColor
@@ -67,7 +68,7 @@ Rectangle {
         Label {
             text: root.text
             color: root.contentColor
-            font.family: (typeof displayFont !== "undefined" ? displayFont : "Space Grotesk")
+            font.family: (typeof displayFont !== "undefined" ? displayFont : "IBM Plex Sans")
             font.pixelSize: 12
             font.weight: Font.DemiBold
             Layout.alignment: Qt.AlignVCenter

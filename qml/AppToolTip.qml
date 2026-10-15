@@ -82,7 +82,7 @@ ToolTip {
         wrapMode: Text.WordWrap
         maximumLineCount: 2
         elide: Text.ElideRight
-        font.family: (typeof displayFont !== "undefined" && displayFont.length > 0) ? displayFont : "Space Grotesk"
+        font.family: (typeof displayFont !== "undefined" && displayFont.length > 0) ? displayFont : "IBM Plex Sans"
         font.pixelSize: 11
         font.weight: Font.DemiBold
         color: "#FFFFFF"
