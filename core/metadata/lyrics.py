@@ -6,7 +6,7 @@ LRCLIB_GET_URL = "https://lrclib.net/api/get"
 LRCLIB_SEARCH_URL = "https://lrclib.net/api/search"
 
 HEADERS = {
-    "User-Agent": "HarmonixDownloader/1.0 (https://github.com/freyr-apmyx-unified)"
+    "User-Agent": "GrabSongs/1.0 (https://github.com/spydersyrup/GrabSongs)"
 }
 
 class LyricsFetcher:

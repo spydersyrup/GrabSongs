@@ -163,7 +163,7 @@ class AudioTagger:
             cover_path = ""
             try:
                 import hashlib
-                cache_dir = os.path.join(os.path.expanduser("~"), ".harmonix", "covers")
+                cache_dir = os.path.join(os.path.expanduser("~"), ".grabsongs", "covers")
                 os.makedirs(cache_dir, exist_ok=True)
                 h = hashlib.md5(file_path.encode("utf-8")).hexdigest()
                 cached_art = os.path.join(cache_dir, f"{h}.jpg")

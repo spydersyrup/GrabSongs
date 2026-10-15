@@ -195,7 +195,7 @@ ApplicationWindow {
                 text: {
                     if (window.page === "explore") return "Explore"
                     if (window.page === "queue") return "Download Queue"
-                    if (window.page === "library") return "Harmonix Library"
+                    if (window.page === "library") return "GrabSongs Library"
                     if (window.page === "settings") return "Settings"
                     return "GrabSongs"
                 }
@@ -372,7 +372,7 @@ ApplicationWindow {
                         sidebarCollapsed: window.sidebarCollapsed
                         destination: "library"
                         iconName: "music"
-                        label: "Harmonix Library"
+                        label: "GrabSongs Library"
                     }
                 }
 
@@ -396,7 +396,7 @@ ApplicationWindow {
 
                     Item { width: 1; height: 2 }
 
-                    // Open Harmonix Folder action
+                    // Open GrabSongs Folder action
                     Item {
                         width: sidebarPanel.width
                         height: 40
@@ -425,7 +425,7 @@ ApplicationWindow {
                                 anchors.left: parent.left
                                 anchors.leftMargin: 46
                                 anchors.verticalCenter: parent.verticalCenter
-                                text: "Harmonix Folder"
+                                text: "GrabSongs Folder"
                                 color: fldMouse.containsMouse ? textPrimary : textSecondary
                                 font.family: displayFont
                                 font.pixelSize: 13
@@ -1247,7 +1247,7 @@ ApplicationWindow {
                             RowLayout {
                                 Layout.fillWidth: true
                                 Label {
-                                    text: "Harmonix Library (" + window.downloadedFiles.length + " songs)"
+                                    text: "GrabSongs Library (" + window.downloadedFiles.length + " songs)"
                                     font.family: displayFont
                                     font.pixelSize: 18
                                     font.weight: Font.Bold
@@ -1334,7 +1334,7 @@ ApplicationWindow {
                                     }
                                     Label {
                                         Layout.alignment: Qt.AlignHCenter
-                                        text: "Harmonix library is empty"
+                                        text: "GrabSongs library is empty"
                                         font.family: displayFont
                                         font.pixelSize: 16
                                         font.weight: Font.Bold
@@ -1428,7 +1428,7 @@ ApplicationWindow {
 
                                         Label {
                                             Layout.fillWidth: true
-                                            text: modelData.artist || "Harmonix"
+                                            text: modelData.artist || "GrabSongs"
                                             font.family: bodyFont
                                             font.pixelSize: 11
                                             color: textSecondary
@@ -1487,7 +1487,7 @@ ApplicationWindow {
 
                                             Label {
                                                 Layout.fillWidth: true
-                                                text: modelData.artist || "Harmonix"
+                                                text: modelData.artist || "GrabSongs"
                                                 font.family: bodyFont
                                                 font.pixelSize: 11
                                                 color: textSecondary
@@ -1628,8 +1628,8 @@ ApplicationWindow {
                                 // Card 3: Download Directory (SettingCard)
                                 SettingCard {
                                     SettingRow {
-                                        title: "Harmonix Download Directory"
-                                        subtitle: downloaderBridge ? downloaderBridge.downloadDirectory : "C:\\Users\\ladsa\\Music\\Harmonix"
+                                        title: "GrabSongs Download Directory"
+                                        subtitle: downloaderBridge ? downloaderBridge.downloadDirectory : "Music/GrabSongs"
                                         iconName: "folder"
 
                                         SettingButton {
@@ -1806,7 +1806,7 @@ ApplicationWindow {
                         boxSize: 32
                         iconSize: 16
                         iconName: "folder"
-                        tooltipText: "Open Harmonix Folder"
+                        tooltipText: "Open GrabSongs Folder"
                         onClicked: if (downloaderBridge) downloaderBridge.openDownloadFolder()
                     }
                 }

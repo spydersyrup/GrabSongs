@@ -24,8 +24,12 @@ from core.downloader.tagger import AudioTagger
 class PyCoverImageProvider(QQuickImageProvider):
     def __init__(self):
         super().__init__(QQuickImageProvider.ImageType.Image)
-        self.cache_dir = os.path.join(os.path.expanduser("~"), ".harmonix", "covers")
-        os.makedirs(self.cache_dir, exist_ok=True)
+        self.cache_dir = os.path.join(os.path.expanduser("~"), ".grabsongs", "covers")
+        try:
+            os.makedirs(self.cache_dir, exist_ok=True)
+        except Exception:
+            self.cache_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".covers")
+            os.makedirs(self.cache_dir, exist_ok=True)
 
     def requestImage(self, id_str: str, requested_size: QSize):
         parts = id_str.split('/', 1)
@@ -109,13 +113,16 @@ class PyCoverImageProvider(QQuickImageProvider):
 class SettingsBridge(QObject):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.settings_file = os.path.join(os.path.expanduser("~"), ".harmonix", "settings.json")
-        os.makedirs(os.path.dirname(self.settings_file), exist_ok=True)
+        self.settings_file = os.path.join(os.path.expanduser("~"), ".grabsongs", "settings.json")
+        try:
+            os.makedirs(os.path.dirname(self.settings_file), exist_ok=True)
+        except Exception:
+            self.settings_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "settings.json")
         self._data: Dict[str, Any] = {
             "ui/accentName": "recordRed",
             "ui/page": "home",
             "ui/sidebarCollapsed": False,
-            "library/folders": [os.path.expanduser("~/Music/Harmonix")],
+            "library/folders": [os.path.expanduser("~/Music/GrabSongs")],
             "search/recent": "[]"
         }
         self._load()
@@ -176,16 +183,23 @@ class SettingsBridge(QObject):
     @pyqtSlot(str)
     def showInFolder(self, file_path: str):
         if os.path.exists(file_path):
-            os.system(f'explorer /select,"{os.path.abspath(file_path)}"')
+            import subprocess
+            if sys.platform == "win32":
+                subprocess.run(["explorer", f"/select,{os.path.abspath(file_path)}"])
+            elif sys.platform == "darwin":
+                subprocess.run(["open", "-R", os.path.abspath(file_path)])
+            else:
+                folder = os.path.dirname(os.path.abspath(file_path)) if os.path.isfile(file_path) else file_path
+                subprocess.run(["xdg-open", folder])
 
     @pyqtSlot(result=str)
     def getLogFilePath(self) -> str:
-        return os.path.join(os.path.expanduser("~"), ".harmonix", "harmonix.log")
+        return os.path.join(os.path.expanduser("~"), ".grabsongs", "grabsongs.log")
 
     @pyqtSlot(result=str)
     @pyqtSlot(int, result=str)
     def readRecentLogs(self, maxLines: int = 150) -> str:
-        return "Harmonix CassetteCat System Ready\n"
+        return "GrabSongs CassetteCat System Ready\n"
 
     @pyqtSlot()
     def clearLogs(self):
@@ -206,8 +220,12 @@ class LibraryBridge(QAbstractListModel):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.music_dir = os.path.expanduser("~/Music/Harmonix")
-        os.makedirs(self.music_dir, exist_ok=True)
+        self.music_dir = os.path.expanduser("~/Music/GrabSongs")
+        try:
+            os.makedirs(self.music_dir, exist_ok=True)
+        except Exception:
+            self.music_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "downloads")
+            os.makedirs(self.music_dir, exist_ok=True)
         self._folders = [self.music_dir]
         self._tracks: List[Dict[str, Any]] = []
         self._visible_tracks: List[Dict[str, Any]] = []
@@ -255,7 +273,7 @@ class LibraryBridge(QAbstractListModel):
                     meta = AudioTagger.read_tags(fpath)
                     title = meta.get("title") or os.path.splitext(fname)[0]
                     artist = meta.get("artist") or "Unknown Artist"
-                    album = meta.get("album") or "Harmonix Library"
+                    album = meta.get("album") or "GrabSongs Library"
                     dur_sec = meta.get("duration", 0)
                     mins = int(dur_sec // 60)
                     secs = int(dur_sec % 60)
@@ -1332,7 +1350,7 @@ class SearchWorker(QThread):
             if result.get("success"):
                 tracks = result.get("tracks", [])
                 config = AppConfig.get_instance()
-                dl_dir = config.get("download_dir", os.path.expanduser("~/Music/Harmonix"))
+                dl_dir = config.get("download_dir", os.path.expanduser("~/Music/GrabSongs"))
                 for t in tracks:
                     expected_name = f"{t.get('artist', '')} - {t.get('title', '')}.mp3"
                     t["downloaded"] = os.path.exists(os.path.join(dl_dir, expected_name))
@@ -1456,7 +1474,7 @@ class DownloaderBridge(QObject):
     @pyqtProperty(str, notify=configChanged)
     def downloadDirectory(self) -> str:
         config = AppConfig.get_instance()
-        return config.get("download_dir", os.path.expanduser("~/Music/Harmonix"))
+        return config.get("download_dir", os.path.expanduser("~/Music/GrabSongs"))
 
     @pyqtSlot(str)
     def setDownloadDirectory(self, path: str):
@@ -1614,7 +1632,7 @@ class DownloaderBridge(QObject):
             return self._preview_meta
         if self._preview_path:
             name_no_ext = os.path.splitext(os.path.basename(self._preview_path))[0]
-            artist = "Harmonix"
+            artist = "GrabSongs"
             title = name_no_ext
             if " - " in name_no_ext:
                 parts = name_no_ext.split(" - ", 1)
@@ -1654,7 +1672,7 @@ class DownloaderBridge(QObject):
         else:
             self._preview_path = path
             name_no_ext = os.path.splitext(os.path.basename(path))[0]
-            artist = "Harmonix"
+            artist = "GrabSongs"
             title = name_no_ext
             if " - " in name_no_ext:
                 parts = name_no_ext.split(" - ", 1)

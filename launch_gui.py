@@ -35,9 +35,9 @@ class PROCESS_INFORMATION(ctypes.Structure):
 
 def launch_on_interactive_desktop():
     cwd = os.path.dirname(os.path.abspath(__file__))
-    songrip_exe = os.path.join(cwd, "SongRip.exe")
-    if os.path.exists(songrip_exe):
-        cmd = f'"{songrip_exe}"'
+    grabsongs_exe = os.path.join(cwd, "GrabSongs.exe")
+    if os.path.exists(grabsongs_exe):
+        cmd = f'"{grabsongs_exe}"'
     else:
         python_exe = sys.executable.replace("python.exe", "pythonw.exe")
         cmd = f'"{python_exe}" "{os.path.join(cwd, "app.py")}"'

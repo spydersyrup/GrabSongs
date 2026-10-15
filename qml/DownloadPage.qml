@@ -102,7 +102,7 @@ Item {
                     }
 
                     Label {
-                        text: "Harmonix Folder"
+                        text: "GrabSongs Folder"
                         font.family: appWindow.displayFont
                         font.pixelSize: 12
                         font.weight: Font.DemiBold

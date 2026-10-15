@@ -8,7 +8,7 @@ CONFIG_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 def get_default_download_dir():
     music_dir = os.path.join(os.path.expanduser("~"), "Music")
     if os.path.exists(music_dir):
-        return os.path.join(music_dir, "Harmonix")
+        return os.path.join(music_dir, "GrabSongs")
     return os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "downloads")
 
 def detect_ffmpeg_path():

@@ -5,6 +5,8 @@ __pycache__/
 *.egg-info/
 dist/
 build/
+.venv/
+.covers/
 
 # Upstream reference repos
 freyr-src/
