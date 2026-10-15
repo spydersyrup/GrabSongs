@@ -1,6 +1,16 @@
+"""Manual smoke check: resolve a track and drive it through the real queue.
+
+Downloads a real file, hits the live network, and asserts nothing, so it is not
+part of the test suite (see tests/). It exists to confirm the whole pipeline
+works end to end against the current state of the sites.
+
+Run from the repo root:  python scripts/smoke_download.py
+"""
 import os
 import sys
 import time
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from PyQt6.QtCore import QCoreApplication
 from core.metadata import MetadataResolver
 from core.downloader.queue_manager import QueueManager

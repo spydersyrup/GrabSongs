@@ -1,3 +1,17 @@
+"""Manual smoke check: resolve a real track from every provider.
+
+This hits the live network and asserts nothing, so it is not part of the test
+suite (see tests/). Its job is the thing unit tests cannot do: notice when a
+provider stops answering. Spotify is scraped rather than called, so a change to
+that page's shape shows up here first and nowhere else.
+
+Run from the repo root:  python scripts/smoke_providers.py
+"""
+import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from core.metadata import MetadataResolver
 
 print("1. Testing YouTube query...")
