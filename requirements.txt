@@ -1,7 +1,8 @@
 PyQt6>=6.6.0
-yt-dlp>=2024.0.0
+# yt-dlp must float upwards: sites change constantly and the library only works
+# while it is tracking them. Do not add an upper bound or an exact pin - a stale
+# yt-dlp fails to download, which is worse than a new one that needs a tweak.
+yt-dlp>=2026.8.19
 mutagen>=1.47.0
 requests>=2.31.0
-Pillow>=10.0.0
 imageio-ffmpeg>=0.4.9
-PyYAML>=6.0.0

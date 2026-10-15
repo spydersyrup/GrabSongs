@@ -29,33 +29,37 @@ reviews:
         abstractions with one use, new dependencies and speculative fallbacks. Don't ask for comments or
         docstrings that restate the code; a comment should explain a reason that isn't obvious. Flag comments
         that narrate the code or mention AI tools.
-    - path: "src/**"
+    - path: "bridge.py"
       instructions: >-
-        Qt 6 C++20. Prefer Qt and the standard library over new code or dependencies. Check object lifetimes and
-        thread affinity: AudioPipeline's sink lives on its own audio thread, and anything QML binds to must
-        outlive the QML engine. Network replies go through trackReply() and must check onlineEnabled() and the
-        relevant serviceEnabled() before using results. Log through qInfo/qWarning with the existing [TAG]
-        prefixes and never log secrets; CredentialVault::redactSecrets runs on every log line. Known false
-        positives: QRandomGenerator::system() doesn't run a program, and opening Qt's QIODevice isn't file access.
+        The single QObject boundary Python exposes to QML. Everything QML can reach goes through a
+        @pyqtProperty / @pyqtSlot here; flag any new one added elsewhere. Watch the GUI thread:
+        getDownloadedFiles() walks the download directory, so work added to it must not do blocking I/O
+        per file.
+    - path: "core/downloader/**"
+      instructions: >-
+        Cancellation is cooperative and must stay that way. QThread.terminate() kills the worker mid-write
+        and orphans the ffmpeg child. A new phase in DownloadWorker.run() needs a cancellation check at its
+        start, because progress_hook is the only hook yt-dlp exposes. QueueManager._process_queue() is the
+        only place that starts workers or advances the queue. build_base_name() is shared with the
+        duplicate check in bridge.py; a second place that guesses a filename will drift from it.
+    - path: "core/metadata/**"
+      instructions: >-
+        One class per provider, exposing class/static methods that return plain dicts or None. Never raise
+        for an expected failure. Apple and Deezer use their public APIs; Spotify is scraped from
+        __NEXT_DATA__ in the embed page with no fallback, so a shape change there returns nothing rather
+        than raising. Flag anything that makes that failure quieter.
     - path: "qml/**"
       instructions: >-
-        Reuse the existing components (ButtonBase, PressDepthIconButton, TransportButton, DialogHeader,
-        SettingButton, SettingRow, SettingCard, AppToolTip, LucideIcon, Cover) instead of new near-copies. Use the
-        theme properties (recordRed, textPrimary, textSecondary, displayFont, bodyFont) rather than literal
-        colours or fonts. Icons come from the bundled Lucide set and must be listed in CMakeLists.txt. No glows,
-        gradients or tinted fills for emphasis; selection uses a border highlight. Labels use Title Case where the
-        rest of the app does. Interactive items need keyboard focus, Enter/Space activation and an Accessible
-        name.
-    - path: "tests/**"
-      instructions: >-
-        Tests should check behaviour a person would notice, using real logic rather than mocks. Pure queue and
-        ordering logic lives in .js libraries so qmltestrunner can test it directly.
-    - path: ".github/workflows/**"
-      instructions: >-
-        Actions are pinned to a full commit SHA with the version in a comment. Keep permissions to the least each
-        job needs, set persist-credentials: false on checkout, and pass untrusted values through env rather than
-        inline ${{ }} in run steps. `id-token: write` is a permission, not a hard-coded token.
+        Reuse the existing components (LucideIcon, PressDepthIconButton, TransportButton, FilterChip,
+        SettingCard, SettingRow, SettingButton, SettingSwitch, NavItem, AppToolTip, VolumeControl) instead of
+        new near-copies. Read colour and font from the window root properties in GrabSongsMain.qml
+        (surfaceCard, textPrimary, brandAccent, bodyFont, monoFont); flag raw hex literals and hardcoded
+        font families at call sites. Icon buttons have no background or border at rest. Radii come from
+        the 4/6/8 scale; flag pills and anything above 8. Accent marks small interactive state, never a
+        background or a large fill. No glow, gradients or glassmorphism. Interactive items need keyboard
+        focus, Enter/Space activation and an Accessible name.
     - path: "**/*.md"
       instructions: >-
-        Plain, direct language for people using or contributing to the app. No marketing tone, emoji headings or
-        badges beyond the existing ones.
+        Plain, direct language for people using or contributing to the app. No marketing tone, emoji
+        headings or badges beyond the existing ones. DESIGN.md holds design intent, DESIGN_SYSTEM.md the
+        token values, CODE_PATTERNS.md the code conventions - they should not restate each other.
