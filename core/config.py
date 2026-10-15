@@ -1,15 +1,16 @@
 import os
 import json
 import shutil
-import pathlib
 
-CONFIG_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "config.json")
+# Settings live under the user's home, alongside the cover-art cache, rather
+# than next to the source - writing into the source tree fails once the app is
+# packaged, installed read-only, or run from somewhere else.
+CONFIG_DIR = os.path.join(os.path.expanduser("~"), ".grabsongs")
+CONFIG_FILE = os.path.join(CONFIG_DIR, "config.json")
+LEGACY_CONFIG_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "config.json")
 
 def get_default_download_dir():
-    music_dir = os.path.join(os.path.expanduser("~"), "Music")
-    if os.path.exists(music_dir):
-        return os.path.join(music_dir, "GrabSongs")
-    return os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "downloads")
+    return os.path.join(os.path.expanduser("~"), "Music", "GrabSongs")
 
 def detect_ffmpeg_path():
     # 1. Check system PATH
@@ -55,6 +56,16 @@ class AppConfig:
         return cls._instance
 
     def load(self):
+        # An existing config next to the source is carried over once. The copy is
+        # left in place rather than moved, so a failed write here cannot cost
+        # the user their settings.
+        if not os.path.exists(CONFIG_FILE) and os.path.exists(LEGACY_CONFIG_FILE):
+            try:
+                os.makedirs(CONFIG_DIR, exist_ok=True)
+                shutil.copy2(LEGACY_CONFIG_FILE, CONFIG_FILE)
+            except Exception as e:
+                print(f"[Config] Could not migrate {LEGACY_CONFIG_FILE}: {e}")
+
         if os.path.exists(CONFIG_FILE):
             try:
                 with open(CONFIG_FILE, "r", encoding="utf-8") as f:
@@ -73,6 +84,7 @@ class AppConfig:
 
     def save(self):
         try:
+            os.makedirs(CONFIG_DIR, exist_ok=True)
             with open(CONFIG_FILE, "w", encoding="utf-8") as f:
                 json.dump(self.settings, f, indent=4)
         except Exception as e:
