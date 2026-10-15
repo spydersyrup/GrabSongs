@@ -9,6 +9,24 @@ from core.downloader.tagger import AudioTagger
 def sanitize_filename(name: str) -> str:
     return re.sub(r'[<>:"/\\|?*]', '_', name).strip()
 
+def build_base_name(meta: Dict[str, Any], config: Dict[str, Any]) -> str:
+    """The filename stem a track will be written under, before the extension.
+
+    Shared with the duplicate check in bridge.py: if that check guesses the name
+    instead of asking here, every track reads as undownloaded as soon as the
+    user changes naming_pattern or the output format.
+    """
+    artist = sanitize_filename(meta.get("artist", "Unknown Artist"))
+    title = sanitize_filename(meta.get("title", "Unknown Track"))
+    album = sanitize_filename(meta.get("album", "Unknown Album"))
+    pattern = config.get("naming_pattern", "{artist} - {title}")
+    try:
+        base_name = pattern.format(artist=artist, title=title, album=album,
+                                   track=int(meta.get("track_number", 1)))
+    except (KeyError, ValueError, TypeError):
+        base_name = f"{artist} - {title}"
+    return sanitize_filename(base_name)
+
 def find_best_audio_match(ydl, title: str, artist: str, target_duration: int = 0) -> Optional[str]:
     clean_title = re.sub(r'[\(\[].*?(official|video|audio|lyrics|explicit|remastered).*?[\)\]]', '', title, flags=re.IGNORECASE).strip()
     query = f"{artist} - {clean_title} audio"
@@ -70,11 +88,12 @@ def find_best_audio_match(ydl, title: str, artist: str, target_duration: int = 0
                 best_score = score
                 best_entry = entry
 
-        if best_entry:
-            return best_entry.get('webpage_url') or best_entry.get('url') or f"https://www.youtube.com/watch?v={best_entry.get('id')}"
-
-        first = entries[0]
-        return first.get('webpage_url') or first.get('url') or f"https://www.youtube.com/watch?v={first.get('id')}"
+        if best_entry is None:
+            # Every candidate was rejected by the filters above. Returning
+            # entries[0] here hands back exactly what was just filtered out, so
+            # report no match and let the caller fall back to a plain search.
+            return None
+        return best_entry.get('webpage_url') or best_entry.get('url') or f"https://www.youtube.com/watch?v={best_entry.get('id')}"
     except Exception as e:
         print(f"[Matcher] Error finding match: {e}")
         return None
@@ -109,18 +128,7 @@ class DownloadWorker(QThread):
             download_dir = self.config.get("download_dir", os.path.expanduser("~/Music/GrabSongs"))
             os.makedirs(download_dir, exist_ok=True)
 
-            naming_pattern = self.config.get("naming_pattern", "{artist} - {title}")
-            try:
-                base_name = naming_pattern.format(
-                    artist=artist,
-                    title=title,
-                    album=album,
-                    track=int(track_num)
-                )
-            except Exception:
-                base_name = f"{artist} - {title}"
-
-            base_name = sanitize_filename(base_name)
+            base_name = build_base_name(self.meta, self.config)
             out_tmpl = os.path.join(download_dir, f"{base_name}.%(ext)s")
 
             # Determine source or search target
@@ -129,7 +137,10 @@ class DownloadWorker(QThread):
             if service in ("youtube", "generic") and source_url:
                 target_url = source_url
             else:
-                self.progress_signal.emit(self.job_id, 5.0, "", "", "Matching studio audio stream...")
+                # The matcher can take as long as a search does, and progress_hook
+                # recomputes the percentage from bytes with no offset, so seeding
+                # it with anything non-zero makes the bar jump backwards.
+                self.progress_signal.emit(self.job_id, 0.0, "", "", "Matching studio audio stream...")
                 with yt_dlp.YoutubeDL({'quiet': True, 'extract_flat': True}) as search_ydl:
                     matched_url = find_best_audio_match(search_ydl, title, artist, duration)
                 if matched_url:

@@ -16,6 +16,7 @@ from core.config import AppConfig
 from core.metadata import MetadataResolver
 from core.downloader.queue_manager import QueueManager
 from core.downloader.tagger import AudioTagger
+from core.downloader.worker import build_base_name
 
 
 class PyCoverImageProvider(QQuickImageProvider):
@@ -130,9 +131,10 @@ class SearchWorker(QThread):
                 tracks = result.get("tracks", [])
                 config = AppConfig.get_instance()
                 dl_dir = config.get("download_dir", os.path.expanduser("~/Music/GrabSongs"))
+                ext = config.get("audio_format", "mp3").lower()
                 for t in tracks:
-                    expected_name = f"{t.get('artist', '')} - {t.get('title', '')}.mp3"
-                    t["downloaded"] = os.path.exists(os.path.join(dl_dir, expected_name))
+                    expected = os.path.join(dl_dir, f"{build_base_name(t, config.settings)}.{ext}")
+                    t["downloaded"] = os.path.exists(expected)
                 collection = None
                 if result.get("type") in ("album", "playlist") and result.get("item"):
                     item = result.get("item")

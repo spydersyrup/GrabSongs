@@ -33,7 +33,9 @@ DEFAULT_CONFIG = {
     "embed_artwork": True,
     "embed_lyrics": True,
     "save_lrc_file": False,
-    "naming_pattern": "{artist} - {title}",  # e.g., "{artist}/{album}/{track:02d} - {title}"
+    # Tokens: {artist}, {title}, {album}, {track}. The result is sanitised into a
+    # single filename, so "/" becomes "_" - subfolder patterns are not supported.
+    "naming_pattern": "{artist} - {title}",
     "max_concurrent_downloads": 2,
     "ffmpeg_path": detect_ffmpeg_path(),
     "theme": "dark",
