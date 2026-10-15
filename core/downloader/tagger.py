@@ -8,10 +8,11 @@ from mutagen.flac import FLAC, Picture
 from mutagen.oggvorbis import OggVorbis
 from typing import Dict, Any, Optional, Tuple
 
-# read_tags() runs on the GUI thread and is called for every file in the library,
-# on every queue tick. mutagen has to reopen and reparse the file each time, so
-# results are memoised against (mtime, size) - any real edit to a track changes
-# both and invalidates the entry.
+# read_tags() runs on the GUI thread and is called for every file in the library
+# each time the library page refreshes. mutagen has to reopen and reparse the
+# file, so results are memoised against (mtime, size); any real edit to a track
+# changes both and invalidates the entry. Failures are memoised too, otherwise a
+# single unparseable file costs a full reopen on every refresh.
 _TAG_CACHE: Dict[str, Tuple[Tuple[float, int], Dict[str, Any]]] = {}
 
 class AudioTagger:
@@ -168,6 +169,7 @@ class AudioTagger:
         try:
             f = mutagen.File(file_path, easy=True)
             if f is None:
+                _TAG_CACHE[file_path] = (fingerprint, {})
                 return {}
             title = f.get("title", [""])[0] if f.get("title") else ""
             artist = f.get("artist", [""])[0] if f.get("artist") else ""
@@ -214,4 +216,7 @@ class AudioTagger:
             _TAG_CACHE[file_path] = (fingerprint, result)
             return result
         except Exception:
+            # Unparseable files are cached too. Without this every call reopens
+            # them, and a library holding one corrupt file pays for it each time.
+            _TAG_CACHE[file_path] = (fingerprint, {})
             return {}

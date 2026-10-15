@@ -172,12 +172,15 @@ obvious alternative is wrong.
   two queues with separate `job_store`s.
 - **`core/downloader/` has no `__init__.py`** while `core/metadata/` does. Imports work because the
   project runs from the repo root, not because the package is declared.
-- **`getDownloadedFiles()` still runs on the GUI thread.** It is cheap now, `read_tags()` memoises on
-  `(mtime, size)` and the 1s poll no longer calls it, but it is still a full `os.walk` plus a `stat`
-  per file. A library index would remove the walk entirely; until then, do not add per-file work to it.
+- **`getDownloadedFiles()` still runs on the GUI thread**, but it measures cheap enough that an index
+  is not warranted: 3000 files cost 5.5 ms to walk and stat, plus 6.9 ms of memoised `read_tags()`.
+  The first refresh in a session pays about 680 ms while the cache is cold. If that first hitch ever
+  needs removing, an index maintained on download is the fix; do not add per-file work to the walk
+  in the meantime.
 - **Spotify metadata is scraped** from `__NEXT_DATA__` in the embed page. Apple and Deezer use their
-  public APIs. A failed scrape now returns an error naming the provider instead of searching for the
-  URL text, so the failure is visible, but the scrape itself is still unmaintained.
+  public APIs. The scrape is unversioned and depends on Spotify not changing the embed payload, but
+  track, album and playlist lookups were all verified working. A failed scrape returns an error
+  naming the provider rather than searching for the URL text, so breakage is visible when it happens.
 
 ---
 
