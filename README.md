@@ -38,6 +38,24 @@ run.bat
 python app.py
 ```
 
+### Running the Tests
+
+```bash
+python -m unittest discover -s tests -t .
+```
+
+Standard library only, no test runner to install. The suite is offline — it stubs the network and
+the audio pipeline — so it is safe to run without network access.
+
+Two scripts under `scripts/` check the live services instead. They download real audio and assert
+nothing, so they are not part of the suite; they exist because Spotify is scraped rather than called,
+and a change to that page's shape is invisible to any offline test.
+
+```bash
+python scripts/smoke_providers.py   # does every provider still resolve?
+python scripts/smoke_download.py    # does a download complete end to end?
+```
+
 ---
 
 ## 📁 Repository Structure

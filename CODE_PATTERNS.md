@@ -21,7 +21,8 @@ app.py            process entry: fonts, icons, QML engine, context properties
 ```
 
 Everything QML can touch goes through one `@pyqtProperty` / `@pyqtSlot` on `DownloaderBridge`
-(45 signals and slots in `bridge.py`). QML never imports Python and never calls a worker directly.
+(roughly 40 signals and slots in `bridge.py`). QML never imports Python and never calls a worker
+directly.
 
 **Do not** add a second bridge, a facade, or a service layer between `bridge.py` and `core/`.
 `bridge.py` already is the boundary.
@@ -92,9 +93,9 @@ The config file is `config.json` next to the repo root, and it is gitignored.
 
 ## 5. Error Handling
 
-The established idiom is `except Exception` with a `print()` to stdout — 21 `print()` calls and 15
-bare excepts across `core/` and `bridge.py`. Match it for consistency when adding code near existing
-handlers.
+The established idiom is `except Exception` with a `print()` to stdout — around 20 `print()` calls
+and 14 bare excepts across `core/` and `bridge.py`. Match it for consistency when adding code near
+existing handlers.
 
 It is a weak idiom and the weakest part of this codebase:
 
@@ -159,30 +160,42 @@ obvious alternative is wrong.
 
 ## 9. Known Inconsistencies (do not silently copy these)
 
-- **`QueueManager.get_instance()` is vestigial.** `bridge.py:169` constructs `QueueManager(self)`
-  directly; only `test_download_engine.py` calls the singleton. Two calls in one process would get
+- **`QueueManager.get_instance()` is vestigial.** `bridge.py` constructs `QueueManager(self)`
+  directly; only `scripts/smoke_download.py` calls the singleton. Two calls in one process would get
   two queues with separate `job_store`s.
 - **`core/downloader/` has no `__init__.py`** while `core/metadata/` does. Imports work because the
   project runs from the repo root, not because the package is declared.
-- **`getDownloadedFiles()` runs on the GUI thread** and re-parses every file's tags on each call,
-  including after every completed download. It is `O(files)` per call and `O(files × jobs)` across a
-  batch. `togglePlayPause` calls it only to pick one file.
+- **`getDownloadedFiles()` still runs on the GUI thread.** It is cheap now — `read_tags()` memoises on
+  `(mtime, size)` and the 1s poll no longer calls it — but it is still a full `os.walk` plus a `stat`
+  per file. A library index would remove the walk entirely; until then, do not add per-file work to it.
 - **Spotify metadata is scraped** from `__NEXT_DATA__` in the embed page. Apple and Deezer use their
-  public APIs. The scrape has no fallback: if the page shape changes, Spotify silently returns
-  nothing.
+  public APIs. A failed scrape now returns an error naming the provider instead of searching for the
+  URL text, so the failure is visible — but the scrape itself is still unmaintained.
 - **The download queue is in-memory only.** Closing the app mid-batch discards every job.
-- **Duplicate detection in `bridge.py` hardcodes `{artist} - {title}.mp3`** while the worker honours
-  the configurable `naming_pattern` and output format, so the check is wrong for any non-default
-  setting.
-- **`config.json` is written next to the source**, which breaks installed/frozen builds and ignores
-  XDG on Linux; `PyCoverImageProvider` already uses `~/.grabsongs/` for its cache, so the app is
-  inconsistent with itself.
 
 ---
 
-## 10. Contribution Rule
+## 10. Tests
 
-Before adding a provider, worker phase, bridge slot, or QML component: check §1–§8 for the existing
+`tests/` runs on stdlib `unittest`, offline, with no test runner to install:
+
+```bash
+python -m unittest discover -s tests -t .
+```
+
+pytest happens to be present in some virtualenvs but is not a declared dependency, so nothing may
+rely on it. Tests stub `yt_dlp` and the metadata providers rather than hitting the network — see
+`scripts/` for the live checks, which are deliberately outside the suite.
+
+A fix for a real defect should arrive with the test that would have caught it. That covers the
+matcher's fallback, the cancellation lifecycle, the tag cache, the naming/duplicate path, and the
+provider-failure path; anything added to `core/` needs the same treatment.
+
+---
+
+## 11. Contribution Rule
+
+Before adding a provider, worker phase, bridge slot, or QML component: check §1–§9 for the existing
 shape first. Match the existing class-per-provider metadata pattern (§2), keep cancellation
-cooperative (§3), add bridge slots rather than a new bridge (§1), and reuse the components in §6
-rather than writing near-copies. Near-zero comments always (§8).
+cooperative (§3), add bridge slots rather than a new bridge (§1), reuse the components in §6 rather
+than writing near-copies, and bring a test with it (§10). Near-zero comments always (§8).
