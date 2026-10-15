@@ -77,9 +77,21 @@ python app.py
 
 ## 📜 License
 
-**Not yet licensed.** No `LICENSE` file exists in this repository yet, so the code is currently
-all rights reserved by default. Pick a license before distributing anything.
+GPL-3.0-or-later. Full text in [`LICENSE`](LICENSE).
 
-This matters here specifically: the icon set in `assets/icons/` is Lucide (ISC) and the bundled
-fonts are IBM Plex (OFL). Both allow bundling in a proprietary project with attribution, but neither
-license is GPL-3.0, so a GPL-3.0 release would need those bundled assets handled separately.
+Bundled assets keep their own licences, both GPL-3.0 compatible: the Lucide icon set in
+`assets/icons/` is ISC, and the IBM Plex fonts in `assets/fonts/` are SIL OFL 1.1. See the
+`LICENSE` file for the required notices.
+
+## ⚖️ A note on what this tool does
+
+GrabSongs resolves metadata from Spotify, Apple Music, Deezer and YouTube and downloads
+audio streams through `yt-dlp`. Whether that is permitted depends on your jurisdiction, on
+the terms of those services, and on whether the material you download is copyrighted. The
+licence above covers this program's source code; it does not make any particular use of it
+lawful, and it does not grant rights to the music.
+
+If you only want to download music you own or that is openly licensed, that is the
+straightforward case. If you want to distribute this tool to others, understand your
+position first — an open licence on the code does not neutralise the terms of the services
+it talks to.
