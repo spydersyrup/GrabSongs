@@ -1,10 +1,9 @@
 import os
 import uuid
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Callable, Optional
 from PyQt6.QtCore import QObject, pyqtSignal
 from core.downloader.worker import DownloadWorker
 from core.config import AppConfig
-
 
 class QueueManager(QObject):
     job_added = pyqtSignal(str, dict)                     # job_id, meta
@@ -13,15 +12,40 @@ class QueueManager(QObject):
     job_error = pyqtSignal(str, str)                      # job_id, error_msg
     all_completed = pyqtSignal()
 
+    _instance = None
+
+    @classmethod
+    def get_instance(cls, parent=None):
+        if cls._instance is None:
+            cls._instance = QueueManager(parent)
+        return cls._instance
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.config = AppConfig.get_instance()
-        self.queue: List[Dict[str, Any]] = []             # List of pending job dicts
+        self.queue: List[Dict[str, Any]] = []
         self.active_workers: Dict[str, DownloadWorker] = {}
         self.completed_jobs: List[Dict[str, Any]] = []
         self.job_store: Dict[str, Dict[str, Any]] = {}
+        self._subscribers: List[Callable[[str, Dict[str, Any]], None]] = []
 
-    def add_tracks(self, tracks: List[Dict[str, Any]]):
+    def subscribe(self, callback: Callable[[str, Dict[str, Any]], None]):
+        if callback not in self._subscribers:
+            self._subscribers.append(callback)
+
+    def unsubscribe(self, callback: Callable[[str, Dict[str, Any]], None]):
+        if callback in self._subscribers:
+            self._subscribers.remove(callback)
+
+    def _notify(self, event_type: str, data: Dict[str, Any]):
+        for sub in list(self._subscribers):
+            try:
+                sub(event_type, data)
+            except Exception:
+                pass
+
+    def add_tracks(self, tracks: List[Dict[str, Any]]) -> List[str]:
+        added_ids = []
         for track in tracks:
             job_id = f"job_{uuid.uuid4().hex[:8]}"
             job_data = {
@@ -32,41 +56,55 @@ class QueueManager(QObject):
                 "speed": "",
                 "eta": "",
                 "file_path": None,
-                "error": None
+                "error": None,
+                "cancelled": False
             }
             self.job_store[job_id] = job_data
             self.queue.append(job_data)
+            added_ids.append(job_id)
             self.job_added.emit(job_id, track)
+            self._notify("job_added", {"job_id": job_id, "metadata": track})
 
         self._process_queue()
+        return added_ids
 
     def cancel_job(self, job_id: str):
-        # If in active workers
         if job_id in self.active_workers:
-            worker = self.active_workers[job_id]
-            worker.cancel()
-            worker.terminate()
-            del self.active_workers[job_id]
-            if job_id in self.job_store:
-                self.job_store[job_id]["status"] = "Cancelled"
+            # Cooperative cancel. The worker stops at its next cancellation point
+            # and reports back through _on_worker_error, which is what releases the
+            # slot and advances the queue. terminate() would kill it mid-write,
+            # leaving a half-written file and an orphaned ffmpeg child.
+            self.active_workers[job_id].cancel()
+            self._mark_cancelled(job_id)
             self.job_error.emit(job_id, "Download cancelled by user.")
-            self._process_queue()
         else:
-            # If still queued
             self.queue = [j for j in self.queue if j["id"] != job_id]
-            if job_id in self.job_store:
-                self.job_store[job_id]["status"] = "Cancelled"
+            self._mark_cancelled(job_id)
             self.job_error.emit(job_id, "Download cancelled.")
 
     def cancel_all(self):
+        for j in list(self.queue):
+            self._mark_cancelled(j.get("id"))
         self.queue.clear()
         for job_id, worker in list(self.active_workers.items()):
             worker.cancel()
-            worker.terminate()
-            if job_id in self.job_store:
-                self.job_store[job_id]["status"] = "Cancelled"
-            self.job_error.emit(job_id, "Cancelled.")
-        self.active_workers.clear()
+            self._mark_cancelled(job_id)
+
+    def _mark_cancelled(self, job_id: str):
+        job = self.job_store.get(job_id)
+        if job:
+            job["cancelled"] = True
+            job["status"] = "Cancelled"
+        self._notify("job_cancelled", {"job_id": job_id})
+
+    def get_all_jobs(self) -> Dict[str, Dict[str, Any]]:
+        return dict(self.job_store)
+
+    def get_active_jobs(self) -> List[Dict[str, Any]]:
+        return [
+            j for j in self.job_store.values()
+            if j.get("status") in ("Queued", "Downloading", "Converting", "Tagging")
+        ]
 
     def _process_queue(self):
         max_concurrent = int(self.config.get("max_concurrent_downloads", 2))
@@ -93,12 +131,23 @@ class QueueManager(QObject):
             self.all_completed.emit()
 
     def _on_worker_progress(self, job_id: str, percent: float, speed: str, eta: str, status: str):
-        if job_id in self.job_store:
-            self.job_store[job_id]["percent"] = percent
-            self.job_store[job_id]["speed"] = speed
-            self.job_store[job_id]["eta"] = eta
-            self.job_store[job_id]["status"] = status
+        job = self.job_store.get(job_id)
+        # Progress already in flight when the user cancelled would otherwise
+        # overwrite "Cancelled" with "Downloading..." as it drains the queue.
+        if not job or job["cancelled"]:
+            return
+        job["percent"] = percent
+        job["speed"] = speed
+        job["eta"] = eta
+        job["status"] = status
         self.job_progress.emit(job_id, percent, speed, eta, status)
+        self._notify("job_progress", {
+            "job_id": job_id,
+            "progress": percent,
+            "speed": speed,
+            "eta": eta,
+            "status": "downloading" if percent < 95 else "converting"
+        })
 
     def _on_worker_finished(self, job_id: str, file_path: str, meta: dict):
         if job_id in self.active_workers:
@@ -109,13 +158,25 @@ class QueueManager(QObject):
             self.job_store[job_id]["file_path"] = file_path
             self.completed_jobs.append(self.job_store[job_id])
         self.job_finished.emit(job_id, file_path, meta)
+        self._notify("job_completed", {
+            "job_id": job_id,
+            "file_path": file_path,
+            "metadata": meta,
+            "status": "completed"
+        })
         self._process_queue()
 
     def _on_worker_error(self, job_id: str, error_msg: str):
         if job_id in self.active_workers:
             del self.active_workers[job_id]
-        if job_id in self.job_store:
-            self.job_store[job_id]["status"] = "Failed"
-            self.job_store[job_id]["error"] = error_msg
-        self.job_error.emit(job_id, error_msg)
+        job = self.job_store.get(job_id)
+        if job and not job["cancelled"]:
+            job["status"] = "Failed"
+            job["error"] = error_msg
+            self.job_error.emit(job_id, error_msg)
+            self._notify("job_failed", {
+                "job_id": job_id,
+                "error": error_msg,
+                "status": "failed"
+            })
         self._process_queue()
