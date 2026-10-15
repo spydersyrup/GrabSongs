@@ -102,10 +102,20 @@ ApplicationWindow {
     property var activeJobs: []
     property var downloadedFiles: []
     property bool isSearching: downloaderBridge ? downloaderBridge.isSearching : false
+
+    onPageChanged: {
+        if (page === "library" && downloaderBridge) {
+            window.downloadedFiles = downloaderBridge.getDownloadedFiles()
+        }
+    }
     property string searchError: ""
     property string libraryViewMode: "grid" // "grid" or "list"
 
-    // Timer to poll download queue and library
+    // Poll the download queue. The library is deliberately not polled here:
+    // getDownloadedFiles() walks the whole directory and parses tags, which is
+    // far too expensive to run every second while the library page is open.
+    // It refreshes from onJobFinished / onDownloadedFilesChanged instead, and
+    // onPageChanged covers entering the page with files added outside the app.
     Timer {
         interval: 1000
         running: true
@@ -113,9 +123,6 @@ ApplicationWindow {
         onTriggered: {
             if (downloaderBridge) {
                 window.activeJobs = downloaderBridge.getActiveJobs()
-                if (window.page === "library") {
-                    window.downloadedFiles = downloaderBridge.getDownloadedFiles()
-                }
             }
         }
     }

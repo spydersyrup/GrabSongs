@@ -6,7 +6,13 @@ from mutagen.id3 import ID3, APIC, USLT, COMM, TIT2, TPE1, TALB, TRCK, TPOS, TDR
 from mutagen.mp4 import MP4, MP4Cover
 from mutagen.flac import FLAC, Picture
 from mutagen.oggvorbis import OggVorbis
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, Tuple
+
+# read_tags() runs on the GUI thread and is called for every file in the library,
+# on every queue tick. mutagen has to reopen and reparse the file each time, so
+# results are memoised against (mtime, size) - any real edit to a track changes
+# both and invalidates the entry.
+_TAG_CACHE: Dict[str, Tuple[Tuple[float, int], Dict[str, Any]]] = {}
 
 class AudioTagger:
     @staticmethod
@@ -152,6 +158,14 @@ class AudioTagger:
         if not os.path.exists(file_path):
             return {}
         try:
+            stat = os.stat(file_path)
+        except OSError:
+            return {}
+        fingerprint = (stat.st_mtime, stat.st_size)
+        cached = _TAG_CACHE.get(file_path)
+        if cached is not None and cached[0] == fingerprint:
+            return cached[1]
+        try:
             f = mutagen.File(file_path, easy=True)
             if f is None:
                 return {}
@@ -190,12 +204,14 @@ class AudioTagger:
             except Exception:
                 pass
 
-            return {
+            result = {
                 "title": title,
                 "artist": artist,
                 "album": album,
                 "duration": duration,
                 "cover_path": cover_path
             }
+            _TAG_CACHE[file_path] = (fingerprint, result)
+            return result
         except Exception:
             return {}
