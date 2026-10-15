@@ -74,7 +74,7 @@ ApplicationWindow {
     readonly property color silverDim: "#8C867E"
     readonly property color textPrimary: "#F4F1EB"
     readonly property color textSecondary: "#9E978E"
-    readonly property color textMuted: "#635E57"
+    readonly property color textMuted: "#938A80"
     readonly property color danger: "#D65A5A"
     readonly property color success: "#5EA67A"
 

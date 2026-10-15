@@ -40,12 +40,16 @@ rather than a reinterpretation.
 |---|---|---|
 | `textPrimary` | `#F4F1EB` | Titles, primary labels |
 | `textSecondary` | `#9E978E` | Artist, album, supporting text |
-| `textMuted` | `#635E57` | Disabled, placeholder, de-emphasised |
+| `textMuted` | `#938A80` | Disabled, placeholder, de-emphasised |
 | `silver` | `#E5E2DC` | Neutral control bodies |
 | `silverDim` | `#8C867E` | Muted control tone |
 
 `danger` (`#D65A5A`) and `success` (`#5EA67A`) are the only semantic colours. There is no warning
 colour; anything that is neither failure nor success is neutral.
+
+All three text tokens meet WCAG AA (4.5:1) against every surface above. `textMuted` is the binding
+one: 4.57:1 on `surfaceElevated`, the lightest surface. Anything dimmer fails, so if you need a
+fourth tier of de-emphasis it has to come from size or weight, not lightness.
 
 ---
 

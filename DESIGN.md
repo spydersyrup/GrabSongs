@@ -43,11 +43,13 @@ no decorative statistics, no fake terminals, no telemetry that isn't measured.
 ## Accessibility
 
 Text must meet WCAG AA (4.5:1) against the surface it sits on; icons and control borders must meet
-3:1. `textPrimary` and `textSecondary` pass everywhere. **`textMuted` does not** — it lands between
-2.4:1 and 3.1:1 depending on the surface, and it is applied to body text at
-`GrabSongsMain.qml:624`. Treat it as an open defect: either raise its value or restrict it to
-genuinely decorative use. An earlier version of this document claimed every token passed AA; that
-claim was wrong and is recorded here so it isn't repeated.
+3:1. All three text tokens now pass on every surface in the palette — `textSecondary` at 6.15:1 on
+`surfaceCard`, `textMuted` at 4.57:1 on the lightest surface (`surfaceElevated`), which is the
+binding constraint.
+
+An earlier version of this document claimed every token passed AA. It did not: `textMuted` was
+`#635E57`, which measured 2.42:1–3.10:1 and was applied to 13px body text. It failed as text and,
+on `surfaceElevated`, failed 3:1 as an icon tint too.
 
 ## Settled
 
