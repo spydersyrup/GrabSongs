@@ -2,7 +2,7 @@
 
 **Project:** GrabSongs (formerly SongRip / Harmonix Downloader)
 **Workspace:** `c:\Users\ladsa\Documents\antigravity\eager-lovelace`
-**Total Interactive User Turns:** 29
+**Total Interactive User Turns:** 32
 
 ---
 
@@ -754,4 +754,46 @@ I want a log of this chat
 *(Actions executed asynchronously / tool execution)*
 
 ---
+
+## Turn 30 (2026-10-15T03:02:28+05:30)
+
+### User
+
+https://github.com/spydersyrup/GrabSongs
+
+i was working on this project on a different pc that was windows now working in linux can you please clone it locally and gather all info i also have added chat log etc
+
+### Assistant
+
+Cloned repository locally to `/home/spydersyrup/.gemini/antigravity/scratch/GrabSongs`, established virtual environment with all core dependencies (`PyQt6`, `yt-dlp`, `mutagen`, `requests`, `Pillow`, `imageio-ffmpeg`, `PyYAML`), verified multi-service scrapers (YouTube, Spotify, Apple Music, Deezer, LRCLIB), and validated the audio extraction, 320 kbps MP3 conversion, and tagging pipeline.
+
+---
+
+## Turn 31 (2026-10-15T03:10:07+05:30)
+
+### User
+
+replace all outdated names with grabsongs
+i want a better tech stack for this
+
+### Assistant
+
+Replaced all legacy references to `Harmonix`, `SongRip`, and `freyr-apmyx` with `GrabSongs` across `bridge.py`, `core/config.py`, `core/downloader/tagger.py`, `core/metadata/lyrics.py`, `launch_gui.py`, `qml/DownloadPage.qml`, and `qml/GrabSongsMain.qml`. Added missing Lucide vector icons (`arrow-right.svg`, `clipboard.svg`) to eliminate QML runtime warnings. Provided comprehensive architectural evaluation and comparison for modern alternative stacks (Tauri 2.0 + Rust + React/Tailwind, Go + Wails, Python FastAPI + Modern Web UI).
+
+---
+
+## Turn 32 (2026-10-15T03:16:15+05:30)
+
+### User
+
+agy plugin install https://github.com/miqdadbadjuber/anti-slop
+move this convo to the project
+agy plugin install https://github.com/DietrichGebert/ponytail
+
+### Assistant
+
+Installed `anti-slop` and `ponytail` plugins into `~/.gemini/config/plugins/`, verified live registration via Language Server RPC, and moved conversation transcripts and logs into the project repository.
+
+---
+
 
