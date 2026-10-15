@@ -1,47 +1,59 @@
-# CassetteCat Desktop design
+# GrabSongs — Design Direction
 
-The visual system the app uses today, so new screens match it. Values come from `qml/Main.qml`.
+The intent behind the visual system: what it is trying to feel like, and the rules that aren't
+mechanical. The actual token values, component geometry, and code references are in
+`DESIGN_SYSTEM.md`; this file is not a second copy of them.
 
-## Color
+## The idea
 
-Record red (`#C23B30`, hover `#D64337`) is CassetteCat's brand color. The other accent choices in Settings (amber, cyan, emerald, magenta, silver, custom) are user preferences that replace it in the interface only.
+The interface is a piece of equipment, not a website. It should feel closer to a well-made tool you
+own and operate than to a subscription product: soot-black surfaces, one warm accent, controls that
+look pressable, and numbers that read like an instrument display.
 
-Surfaces are warm near-black, darkest to lightest:
+Restraint is the method. The palette has no glow, no neon, and no gradient used for emphasis, and
+there are no shadow tokens — depth comes from stepping surface lightness. Anything decorative has to
+justify its own existence against that.
 
-| Token | Value | Use |
-|---|---|---|
-| `surfaceDeep` | `#0B0A09` | Behind full-bleed artwork: Now Playing, album and artist pages |
-| `surfaceBase` | `#0E0D0C` | Window background |
-| `surfaceSidebar` | `#131211` | Sidebar |
-| `surfaceDock` | `#151412` | Player dock |
-| `surfaceCard` | `#181715` | Cards, rows |
-| `surfaceInput` | `#1A1917` | Text fields |
-| `surfaceCardHover` | `#22201D` | Hovered cards |
-| `surfaceElevated` | `#282623` | Popups, menus |
+## Rules that aren't derivable from the token table
 
-Text, brightest to dimmest. Each meets WCAG AA (4.5:1) on every surface above:
+**Containerless icons.** An icon button has no background and no border at rest. It gains a surface
+only on hover or press. A permanent box behind an icon reads as a button-shaped placeholder rather
+than an affordance, so this holds for empty states, error states, and row actions alike — not just
+for the primary controls.
 
-| Token | Value | Use |
-|---|---|---|
-| `textPrimary` | `#F5F0EC` | Titles, body |
-| `textSecondary` | `#A8A49E` | Supporting text |
-| `silverDim` | `#918E88` | Metadata, idle icons |
-| `accentText` | accent, lightened to 4.5:1 | Small text in the accent color |
+**Don't wrap content in a container for grouping.** If a fill is only barely distinguishable from
+the background behind it, it isn't a container, it's an invisible wrapper, and the content reads
+better sitting directly on the surface. Use a border or a real step in lightness if a group needs to
+be distinguishable.
 
-Status colors: `danger` (`#FF6B6B`) for errors and destructive actions, `success` (`#34D399`) for confirmations. Tints of them, the accent and the surfaces come from `Qt.alpha()` on the token, not new hex values.
+**The accent marks state, never mass.** Accent fills small interactive things: active nav items,
+playing indicators, focus borders, progress fill. It is never a background and never a large area.
+Where an accent does fill something, `accentButtonText` supplies the contrasting text colour for
+that specific accent.
 
-Use `accentText`, never the raw accent, for text under 18px. Icons and shapes need 3:1: the raw accent meets it on `surfaceBase` and `surfaceCard` but not on `surfaceElevated` (2.85:1), so use `accentText` there. Text over cover art needs a dark overlay strong enough to hold 4.5:1 over pale art.
+**Mono is for instruments, not for emphasis.** Anything that should read as a machine readout —
+bitrate, duration, file size, speed, ETA, paths — is `monoFont`. Labels and sentences are not.
 
-## Type
+**Motion is mechanical.** Parts slide; nothing bounces casually. Layout transitions are fixed
+durations. Overshoot easing is reserved for discrete, user-triggered affordances.
 
-- Headings: Space Grotesk (`displayFont`).
-- Body: IBM Plex Sans (`bodyFont`).
-- Numbers, counts, small labels: IBM Plex Mono (`monoFont`).
+**No fake precision.** Nothing invents numbers, states, or capabilities the app doesn't have —
+no decorative statistics, no fake terminals, no telemetry that isn't measured.
 
-## Icons
+## Accessibility
 
-Lucide for interface icons, Simple Icons for brand marks.
+Text must meet WCAG AA (4.5:1) against the surface it sits on; icons and control borders must meet
+3:1. `textPrimary` and `textSecondary` pass everywhere. **`textMuted` does not** — it lands between
+2.4:1 and 3.1:1 depending on the surface, and it is applied to body text at
+`GrabSongsMain.qml:624`. Treat it as an open defect: either raise its value or restrict it to
+genuinely decorative use. An earlier version of this document claimed every token passed AA; that
+claim was wrong and is recorded here so it isn't repeated.
 
-## Direction
+## Settled
 
-This system is settled and is not being redesigned. New screens reuse these tokens, fonts and icons and follow the existing screens; they do not introduce a new style.
+This system is not being redesigned. New screens reuse the existing tokens, fonts, components, and
+rules. They follow the existing screens; they do not introduce a new style.
+
+If a genuinely new need appears — a light theme, a second information density, a new control
+category — raise it explicitly first. Those are palette-wide or system-wide changes, not local
+ones, and a partial version of one is worse than not having it.
