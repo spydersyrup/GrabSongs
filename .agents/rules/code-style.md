@@ -1,4 +1,4 @@
-# CassetteCat Code Style
+# GrabSongs Code Style
 
 This project's full engineering guidelines live in `CLAUDE.md` at the repo root. Read that file in full and follow it exactly, it is the canonical source. This file is a condensed summary for quick reference.
 
